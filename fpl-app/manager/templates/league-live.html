@@ -1,0 +1,101 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} - Leagues {% endblock %}
+
+{% block content %}
+
+    {% load url_tags custom_tags%}
+
+    <div id="league-standings-page" data-page="league-standings">
+    
+    <h3>Live League Standings for {{ league.name }}</h3>
+
+    <div style="display: none;" class="hidden_easiest" id="easiest_fdr">{{ easiest }}</div>
+    <div style="display: none;" class="hidden_hardest" id="highest_fdr">{{ hardest }}</div>
+
+    <hr>
+
+    <div class="pcoded-content">
+        <div class="pcoded-inner-content">
+
+            <table class="table">
+                <thead>
+                <tr>
+                    <th class="custom-row-dets" scope="col">Rank</th>
+                    <th class="custom-league-dets" scope="col">Player</th>
+                    <th class="custom-row-dets" scope="col">Team Name</th>
+                    <th class="custom-row-dets" scope="col">Live Points</th>
+                    <th class="custom-row-dets" scope="col">Exp Points</th>
+                    <th class="custom-row-dets" scope="col">Total Live Points</th>
+                    <th class="custom-row-dets" colspan="15">Team</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for standing in standing_page_obj %}
+                    <tr>
+                        <td class="custom-row-dets">{{ forloop.counter }}</td>
+                        <td class="custom-league-dets">{{ standing.this_league.player_name }}</td>
+                        <td class="custom-row-dets">{{ standing.this_league.entry_name }}</td>
+                        <td class="custom-row-dets">{% get_gameweek_points standing.manager_team gameweek %}</td>
+                        <td class="custom-row-dets">{{ standing.total_expected }}</td>
+                        <td class="custom-row-dets">{% get_total_points standing.manager_team gameweek standing.this_league %}</td>
+                        {% for pick in standing.picks %}
+                            {% for opponent in pick.player.player_team.next_games.itertuples %}
+                                <td class="valueTD custom-row-player
+                                    {% if pick.is_sub %} custom-shaded {% endif %}
+                                    {% if pick.is_captain %} custom-bolded {% endif %}"
+                                    value="{{ opponent.opponents.fdr }}, {{ opponent.opponents.color }}">{{ pick.shortened_player_name }} ({{ pick.player.player_team.short_name }})<BR>({% get_player_live_points pick gameweek %}) {{ opponent.opponents.show_opponents }}</td>
+                            {% endfor %}
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <ul class="pagination justify-content-center">
+                {% if standing_page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="{% this_url 1 'page' request.GET.urlencode %}">&laquo; First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{% this_url standing_page_obj.previous_page_number 'page' request.GET.urlencode %}">Previous</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">&laquo; First</a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">Previous</a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <a class="page-link">{{ standing_page_obj.number }}</a>
+                </li>
+
+                {% if standing_page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{% this_url standing_page_obj.next_page_number 'page' request.GET.urlencode %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{% this_url standing_page_obj.paginator.num_pages 'page' request.GET.urlencode %}">Last
+                            &raquo;</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">Next</a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">Last &raquo;</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+    </div>
+
+{% endblock content %}
+

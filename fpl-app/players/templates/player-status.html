@@ -1,0 +1,50 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} - Player Status {% endblock %}
+
+<!-- Add any specific CSS -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <h3>Player Status</h3>
+
+    <div class="pcoded-content">
+        <div class="pcoded-inner-content">
+            <!-- Form to handle PlayerStatus -->
+            <form method="post">
+                {% csrf_token %}
+                {{ formset.management_form }}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th>Status</th>
+                            <th>Description</th>
+                            <th>Can Play</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for form in formset %}
+                            <tr>
+                                {{ form.id.as_hidden }}
+                                <td>
+                                    {{ form.instance.status }}
+                                    {{ form.status.as_hidden }}
+                                </td>
+                                <td >{{ form.description }}</td>
+                                <td>{{ form.can_play }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+{% endblock content %}
+
+<!-- Add any specific JavaScript -->
+{% block javascripts %}{% endblock javascripts %}

@@ -1,0 +1,109 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} - Penalties {% endblock %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    {% load url_tags %}
+
+    <h3>Penalties</h3>
+
+    <div class="pcoded-content">
+        <div class="pcoded-inner-content">
+
+            <table class="table">
+                <thead>
+                <tr>
+                    <th class="custom-col-head-value" scope="col">Team</th>
+                    <th class="custom-col-head-value" scope="col">Player</th>
+                    <th class="custom-col-head-value" scope="col">Gameweek</th>
+                    <th class="custom-col-head-value" scope="col">Goalkeeper</th>
+                    <th class="custom-col-head-value" scope="col">Venue</th>
+                    <th class="custom-col-head-value" scope="col">Result</th>
+                    <th class="custom-col-head-value" scope="col">VAR Awarded</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for penalty in penalty_page_obj %}
+                    <tr>
+                        <td class="custom-row-value">{{ penalty.team.name }}</td>
+                        <td class="custom-row-value">{{ penalty.taker.web_name }}</td>
+                        <td class="custom-row-value">{{ penalty.gameweek.id }}</td>
+                        <td class="custom-row-value">{{ penalty.goalkeeper.web_name }}</td>
+                        <td class="custom-row-value">{{ penalty.get_venue_display }}</td>
+                        <td class="custom-row-value">{{ penalty.get_result_display   }}</td>
+                        <td class="custom-row-value">{{ penalty.var_awarded|yesno:"Yes,No" }}</td>
+                    </tr>
+                {% endfor %}
+                <tr>
+                    <th class="custom-col-head-value" scope="col">Totals</th>
+                    <th class="custom-col-head-value" scope="col"></th>
+                    <th class="custom-col-head-value" scope="col">{{penalty_totals.total_awarded}}</th>
+                    <th class="custom-col-head-value" scope="col"></th>
+                    <th class="custom-col-head-value" scope="col">
+                        <p>Home: {{penalty_totals.total_home}}</p>
+                        <p>Away: {{penalty_totals.total_away}}</p>
+                    </th>
+                    <th class="custom-col-head-value" scope="col">
+                        <p>Scored: {{penalty_totals.total_scored}}</p>
+                        <p>Missed: {{penalty_totals.total_missed}}</p>
+                        <p>Saved: {{penalty_totals.total_saved}}</p>
+                        <p>Success: {{ penalty_totals.total_success_percent }}%</p>
+                    </th>
+                    <th class="custom-col-head-value" scope="col">
+                        <p>{{ penalty_totals.total_var_awarded }}</p>
+                        <p>{{ penalty_totals.total_var_percent }}%</p>
+                    </th>
+                </tr>
+                </tbody>
+            </table>
+            <ul class="pagination justify-content-center">
+                {% if penalty_page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="{% this_url 1 'page' request.GET.urlencode %}">&laquo; First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="{% this_url penalty_page_obj.previous_page_number 'page' request.GET.urlencode %}">Previous</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">&laquo; First</a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">Previous</a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <a class="page-link">{{ penalty_page_obj.number }}</a>
+                </li>
+
+                {% if penalty_page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{% this_url penalty_page_obj.next_page_number 'page' request.GET.urlencode %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="{% this_url penalty_page_obj.paginator.num_pages 'page' request.GET.urlencode %}">Last &raquo;</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">Next</a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">Last &raquo;</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+
+{% block javascripts %}{% endblock javascripts %}

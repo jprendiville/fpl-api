@@ -1,0 +1,74 @@
+
+{% load widget_tweaks sort_by_tags result_colour%}
+
+<div class="modal-header">
+    <h3 class="modal-title">{{ playerprediction.player.first_name }} {{ playerprediction.player.second_name }} ({{ playerprediction.player.player_team.name }}) - {{ playerprediction.player.player_type.singular_name }}</h3>
+    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<div class="modal-body modal-l">
+    <div class="pcoded-content">
+        <div class="pcoded-inner-content">
+    <table class="custom-table-fixed">
+        <tr>
+            <td class="custom-col-head-dets">Cost</td>
+            <td class="custom-col-head-dets">{{ playerprediction.player.formatted_cost }}</td>
+        </tr>
+        <tr>
+            <td class="custom-col-head-dets">Points</td>
+            <td class="custom-col-head-dets">{{ playerprediction.player.total_points }}</td>
+        </tr>
+        <tr>
+            <td class="custom-col-head-dets">Form</td>
+            <td class="custom-col-head-dets">{{ playerprediction.player.form }}</td>
+        </tr>
+        <tr>
+            <td data-toggle="tooltip" class="tooltip-test" title="Value Added per £1M (Points Per Match - 2)/Cost.&#10Taking away 2 points as per match, thus eliminating&#10the effect of points for 60 minutes and diminishes&#10the value of subs)">VAPM</td>
+            <td class="custom-col-head-dets">{{ playerprediction.player.vapm }}</td>
+        </tr>
+        <tr>
+            <td class="custom-col-head-dets">FPL Expected Points</td>
+            <td class="custom-col-head-dets">{{ playerprediction.player.ep_next }}</td>
+        </tr>
+        <tr>
+            <td class="custom-col-head-dets">Prediction</td>
+            <td class="custom-col-head-dets">{{ playerprediction.prediction }} - {{ playerprediction.get_opponent }}</td>
+        </tr>
+    </table>
+        </div>
+    </div>
+
+    <div class="pcoded-content">
+        <div class="pcoded-inner-content">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th class="custom-col-head-dets" scope="col">Round</th>
+                    <th class="custom-col-head-dets" scope="col">Prediction</th>
+                    <th class="custom-col-head-dets" scope="col">Actual</th>
+                    <th class="custom-col-head-dets" scope="col">Opponent</th>
+                    <th colspan="2" class="custom-col-head-dets" scope="col">Result</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for pp in playerprediction.player.get_player_prediction_history %}
+                    <tr>
+                        <td class="custom-row-dets">{{ pp.gameweek_id }}</td>
+                        <td class="custom-row-dets">{{ pp.prediction }}</td>
+                        <td class="custom-row-dets">{{ pp.total_points }}</td>
+                        <td class="custom-row-dets">{{ pp.opponent.name }} {{ pp.home_or_away }}</td>
+                        <td class="custom-row-dets">{{ pp.result }}</td>
+                        <td class="custom-result-{% get_result_css_status pp.game_result %}"></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+</div>

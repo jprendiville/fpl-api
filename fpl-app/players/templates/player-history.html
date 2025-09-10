@@ -1,0 +1,94 @@
+
+{% load widget_tweaks sort_by_tags result_colour%}
+
+<div class="modal-header">
+    <h3 class="modal-title">{{ player.first_name }} {{ player.second_name }} ({{ player.player_team.name }}) - {{ player.player_type.singular_name }}</h3>
+    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<div class="modal-body">
+    <div class="pcoded-content">
+        <div class="pcoded-inner-content">
+    <table class="custom-table-fixed">
+        <tr>
+            <td class="custom-col-head-dets">Cost</td>
+            <td class="custom-col-head-dets">{{ player.formatted_cost }}</td>
+        </tr>
+        <tr>
+            <td class="custom-col-head-dets">Points</td>
+            <td class="custom-col-head-dets">{{ player.total_points }}</td>
+        </tr>
+        <tr>
+            <td class="custom-col-head-dets">Form</td>
+            <td class="custom-col-head-dets">{{ player.form }}</td>
+        </tr>
+        <tr>
+            <td data-toggle="tooltip" class="tooltip-test" title="Value Added per £1M (Points Per Match - 2)/Cost.&#10Taking away 2 points as per match, thus eliminating&#10the effect of points for 60 minutes and diminishes&#10the value of subs)">VAPM</td>
+            <td class="custom-col-head-dets">{{ player.vapm }}</td>
+        </tr>
+        <tr>
+            <td class="custom-col-head-dets">Expected Points</td>
+            <td class="custom-col-head-dets">{{ player.ep_next }}</td>
+        </tr>
+    </table>
+        </div>
+    </div>
+
+    <div class="pcoded-content">
+        <div class="pcoded-inner-content">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th class="custom-col-head-dets" scope="col">Round</th>
+                    <th class="custom-col-head-dets" scope="col">Date</th>
+                    <th class="custom-col-head-dets" scope="col">Opponent</th>
+                    <th colspan="2" class="custom-col-head-dets" scope="col">Result</th>
+                    <th class="custom-col-head-dets" scope="col">Minutes</th>
+                    <th class="custom-col-head-dets" scope="col">Points</th>
+                    <th class="custom-col-head-dets" scope="col">Bonus</th>
+                    <th class="custom-col-head-dets" scope="col">Goals</th>
+                    <th class="custom-col-head-dets" scope="col">Assists</th>
+                    {% if player.clean_sheet_benefit %}
+                        <th class="custom-col-head-dets" scope="col">Clean Sheets</th>
+                    {% endif %}
+                </tr>
+                <tr>
+                    <th class="custom-col-head-dets" scope="col" colspan="6">Totals</th>
+                    <th class="custom-col-head-dets">{{ player.total_points }}</th>
+                    <th class="custom-col-head-dets">{{ player.bonus }}</th>
+                    <th class="custom-col-head-dets">{{ player.goals_scored }}</th>
+                    <th class="custom-col-head-dets">{{ player.assists }}</th>
+                    {% if player.clean_sheet_benefit %}
+                        <th class="custom-col-head-dets" scope="col">{{ player.clean_sheets }}</th>
+                    {% endif %}
+                </tr>
+                </thead>
+                <tbody>
+                {% for ph in player.playerhistory_set.all|sort_by:'-kickoff_time' %}
+                    <tr>
+                        <td class="custom-row-dets">{{ ph.round }}</td>
+                        <td class="custom-row-dets">{{ ph.formatted_kickoff_time }}</td>
+                        <td class="custom-row-dets">{{ ph.opponent.short_name }} {{ ph.home_or_away }}</td>
+                        <td class="custom-row-dets">{{ ph.result }}</td>
+                        <td class="custom-result-{% get_result_css_status ph.game_result %}"></td>
+                        <td class="custom-row-dets">{{ ph.minutes }}</td>
+                        <td class="custom-row-dets">{{ ph.total_points }}</td>
+                        <td class="custom-row-dets">{{ ph.bonus }}</td>
+                        <td class="custom-row-dets">{{ ph.goals_scored }}</td>
+                        <td class="custom-row-dets">{{ ph.assists }}</td>
+                        {% if player.clean_sheet_benefit %}
+                            <td class="custom-row-dets">{{ ph.clean_sheets }}</td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+</div>

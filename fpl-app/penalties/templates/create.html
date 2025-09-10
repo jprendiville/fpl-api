@@ -1,0 +1,62 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} - Penalty Admin {% endblock %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    {% load url_tags %}
+
+    <h3>Penalty Admin</h3>
+
+    <div class="pcoded-content">
+        <div class="pcoded-inner-content">
+
+            <form class="site-form" action="{% url 'create' %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <table>
+                    <tr>
+                        <td class="custom-legend">Gameweek</td>
+                        <td>{{ penalty_form.gameweek }}</td>
+                    </tr>
+                    <tr>
+                        <td class="custom-legend">Team</td>
+                        <td>{{ penalty_form.team }}</td>
+                    </tr>
+                    <tr>
+                        <td class="custom-legend">Player</td>
+                        <td>{{ penalty_form.taker }}</td>
+                    </tr>
+                    <tr>
+                        <td class="custom-legend">Goalkeeper</td>
+                        <td>{{ penalty_form.goalkeeper }}</td>
+                    </tr>
+                    <tr>
+                        <td class="custom-legend">Venue</td>
+                        <td>{{ penalty_form.venue }}</td>
+                    </tr>
+                    <tr>
+                        <td class="custom-legend">Result</td>
+                        <td>{{ penalty_form.result }}</td>
+                    </tr>
+                    <tr>
+                        <td class="custom-legend">VAR Awarded</td>
+                        <td>{{ penalty_form.var_awarded }}</td>
+                    </tr>
+
+                </table>
+                <input type="submit" value="CreatePenalty">
+            </form>
+
+        </div>
+    </div>
+
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+
+{% block javascripts %}{% endblock javascripts %}

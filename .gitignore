@@ -1,0 +1,4 @@
+/fpl-app/fpl/twitter_config.env
+__pycache__/
+*.iml
+venv/

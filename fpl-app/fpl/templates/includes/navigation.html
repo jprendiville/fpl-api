@@ -1,0 +1,45 @@
+<div class="d-flex justify-content-start">
+    <a data-trigger-spinner="true" type="button" class="btn btn-primary btn-nav" href="{% url 'home' %}">Home</a>
+    <a data-trigger-spinner="true" type="button" class="btn btn-primary btn-nav" href="{% url 'managers' %}">Managers</a>
+
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary btn-nav dropdown-toggle" data-bs-toggle="dropdown">Players</button>
+        <ul class="dropdown-menu">
+            <li data-trigger-spinner="true"><a class="dropdown-item" href="{% url 'players' %}">All</a></li>
+            <li data-trigger-spinner="true"><a class="dropdown-item" href="{% url 'transfers' %}">Transfers</a></li>
+            <li data-trigger-spinner="true"><a class="dropdown-item" href="{% url 'price-changes' %}">Price Changes</a></li>
+            <li data-trigger-spinner="true"><a class="dropdown-item" href="{% url 'defence' %}">Defence</a></li>
+            <li data-trigger-spinner="true"><a class="dropdown-item" href="{% url 'picker' %}">Picker</a></li>
+            <li data-trigger-spinner="true"><a class="dropdown-item" href="{% url 'predictions' %}">Predictions</a></li>
+            <li data-trigger-spinner="true"><a class="dropdown-item" href="{% url 'prediction-evaluator' %}">Prediction Evaluator</a></li>
+        </ul>
+    </div>
+
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary btn-nav dropdown-toggle" data-bs-toggle="dropdown">Teams</button>
+        <ul class="dropdown-menu">
+            <li data-trigger-spinner="true"><a class="dropdown-item" href="{% url 'fdr' %}">FDR</a></li>
+            <li data-trigger-spinner="true"><a class="dropdown-item" href="{% url 'league-table' %}">League Table</a></li>
+            <li data-trigger-spinner="true"><a class="dropdown-item" href="{% url 'live-fixtures' %}">Live Fixtures</a></li>
+        </ul>
+    </div>
+
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary btn-nav dropdown-toggle" data-bs-toggle="dropdown">Penalties</button>
+        <ul class="dropdown-menu">
+            <li data-trigger-spinner="true"><a class="dropdown-item" href="{% url 'penalties' %}">Penalties</a></li>
+            <li class="dropdown-divider"></li>
+            <li data-trigger-spinner="true"><a class="dropdown-item" href="{% url 'create' %}">Penalty Create</a></li>
+        </ul>
+    </div>
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary btn-nav dropdown-toggle" data-bs-toggle="dropdown">Settings</button>
+        <ul class="dropdown-menu">
+            <li data-trigger-spinner="true"><a class="dropdown-item" href="{% url 'refresh-all-data' %}">Refresh all data</a></li>
+            <li data-trigger-spinner="true"><a class="dropdown-item" href="{% url 'refresh-player-data' %}">Refresh player data</a></li>
+            <li data-trigger-spinner="true"><a class="dropdown-item" href="{% url 'player-status' %}">Player Status</a></li>
+            <li data-trigger-spinner="true"><a class="dropdown-item" href="{% url 'recalculate-predictions' %}">Recalculate Predictions</a></li>
+            <li data-trigger-spinner="true"><a class="dropdown-item" href="{% url 'recalculate-all-predictions' %}">Recalculate All Predictions</a></li>
+        </ul>
+    </div>
+</div>

@@ -1,0 +1,110 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} - Live Fixtures {% endblock %}
+
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    {% load url_tags custom_tags %}
+
+    <h3>Live Fixtures</h3>
+
+    <div class="pcoded-content fixtures">
+        <div class="pcoded-inner-content">
+            <form name="elementForm" method="get" action="">
+                <div>
+                    {{ form.gameweek.label_tag }}
+                    {{ form.gameweek }}
+                </div>
+            </form>
+            <hr>
+
+            <table class="table">
+                <tbody>
+
+                {% with None as previous_date %}
+
+
+                    {% for fixture in fixtures %}
+                        {% if fixture.kickoff_time.date != previous_date %}
+                            <tr>
+                                <th class="custom-col-head"
+                                    colspan="3">{{ fixture.formatted_long_format_date }}</th>
+                            </tr>
+
+                            {% set_html_variable "previous_date" fixture.kickoff_time.date %}
+                        {% endif %}
+
+                        <tr data-bs-toggle="collapse"
+                            data-bs-target="#collapseFixture{{ forloop.counter }}"
+                            aria-expanded="false"
+                            aria-controls="collapseFixture{{ forloop.counter }}"
+                            class="clickable-row">
+                            <td class="col-md-4 custom-row-dets fs-5">{{ fixture.team_home.name }}</td>
+                            <td class="col-md-4 custom-row-dets text-center">
+                        <span class="custom-button">
+                            {% if fixture.started %}
+                                {{ fixture.team_h_score }} -
+                                {{ fixture.team_a_score }}
+                                {% if not fixture.finished_provisional and not fixture.finished %}
+                                    ({{ fixture.minutes }}')
+                                {% endif %}
+                            {% else %}
+                                {{ fixture.formatted_kickoff_time }}
+                            {% endif %}
+                        </span>
+                            </td>
+                            <td class="col-md-4 custom-row-dets fs-5 text-end">{{ fixture.team_away.name }}</td>
+                        </tr>
+
+                        <tr class="collapse"
+                            id="collapseFixture{{ forloop.counter }}">
+                            <td colspan="3">
+                                <div class="container-fluid p-3 container-fixture-details">
+                                    <div class="row">
+                                        {% for stat_type, stats in fixture.combined_stats.items %}
+                                            {% if stats.home or stats.away %}
+                                                <div class="row mb-3">
+                                                    <div class="col-md-4">
+                                                        <ul class="list-unstyled text-center">
+                                                            {% for stat in stats.home %}
+                                                                <li>{{ stat.name }}
+                                                                    ({{ stat.value }})
+                                                                </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    </div>
+
+                                                    <div class="col-md-4">
+                                                        <h6 class="text-center">{{ stat_type|capfirst }}</h6>
+                                                    </div>
+
+                                                    <div class="col-md-4">
+                                                        <ul class="list-unstyled text-center">
+                                                            {% for stat in stats.away %}
+                                                                <li>{{ stat.name }}
+                                                                    ({{ stat.value }})
+                                                                </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+                {% endwith %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+{% endblock content %}
+
+{% block javascripts %} {% endblock javascripts %}

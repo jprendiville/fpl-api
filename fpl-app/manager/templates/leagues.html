@@ -1,0 +1,55 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} - Leagues {% endblock %}
+
+{% block content %}
+
+    <h3>Leagues</h3>
+
+    <hr>
+    <span><strong>{{ manager.information.formatted_name }} - {{ manager.information.name }} {{ manager.manager_team.display_active_chip }}</strong></span>
+
+    <table class="table custom-table-fixed">
+        <thead>
+        <tr>
+            <th class="custom-league-first" scope="col" colspan="4">League</th>
+            <th class="custom-league-dets" scope="col" colspan="2"></th>
+            <th class="custom-league-dets" scope="col">Current Rank</th>
+            <th class="custom-league-dets" scope="col">Last Rank</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for league in classic_leagues %}
+            <tr>
+                <td class="custom-league-first">{{ league.name }}</td>
+                <td>
+                    <a href="{% url 'league' league.league_id manager.information.id %}" style="{% if league.league_type != 'x' %} display: none;{% endif %}" class="custom-button btn btn-sm btn-primary" role="button" data-trigger-spinner="true">Standings</a>
+                </td>
+                <td>
+                    <a href="{% url 'live' league.league_id manager.information.id %}" style="{% if league.league_type != 'x' %} display: none;{% endif %}" class="custom-button btn btn-sm btn-primary " role="button" data-trigger-spinner="true">Live</a>
+                </td>
+                <td>
+                    <a href="{% url 'progression' league.league_id %}" style="{% if league.league_type != 'x' %} display: none;{% endif %}" class="custom-button btn btn-sm btn-primary" role="button" data-trigger-spinner="true">Progression</a>
+                </td>
+                <td>
+                    <a href="{% url 'reload-league' league.league_id manager.information.id %}" style="{% if league.league_type != 'x' %} display: none;{% endif %}" class="custom-button btn btn-sm btn-primary" role="button" data-trigger-spinner="true">Reload data</a>
+                </td>
+                <td>
+                    {% if league.movement == movement.SAME %}
+                        <i class="fa fa-solid fa-circle custom-league-dets"></i>
+                    {% elif league.movement == movement.UP %}
+                        <i class="fa fa-solid fa-arrow-up custom-up-arrow custom-league-dets"></i>
+                    {% else %}
+                        <i class="fa fa-solid fa-arrow-down custom-down-arrow custom-league-dets"></i>
+                    {% endif %}
+                </td>
+                <td class="custom-league-dets">{{ league.entry_rank }}</td>
+                <td class="custom-league-dets">{{ league.entry_last_rank }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock content %}
+

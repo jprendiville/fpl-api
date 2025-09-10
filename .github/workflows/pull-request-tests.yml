@@ -1,0 +1,70 @@
+name: Pull Request Tests
+
+on:
+  push:
+    branches:
+      - develop  # Run tests on pull requests targeting the develop branch
+      - release/**  # Run tests on pull requests targeting the release branches
+      - main  # Run tests on pull requests targeting the main branch
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./fpl-app
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+
+      - name: Copy .env to working directory
+        run: cp ../.env ./
+
+      - name: Load environment variables from .env
+        id: load_env_vars
+        run: |
+          echo "Loading environment variables from .env"
+          set -o allexport
+          source .env
+          set +o allexport
+          # Write environment variables to the GitHub environment file
+          echo "POSTGRES_USER=$postgres_user" >> $GITHUB_ENV
+          echo "POSTGRES_PASSWORD=$postgres_password" >> $GITHUB_ENV
+          echo "POSTGRES_DB=$postgres_db" >> $GITHUB_ENV
+          echo "DATABASE_URL=$database_url" >> $GITHUB_ENV
+          echo "DJANGO_SETTINGS_MODULE=$django_settings_module" >> $GITHUB_ENV
+          echo "TZ=$django_timezone" >> $GITHUB_ENV
+
+      - name: Start PostgreSQL service
+        run: |
+          docker run --name postgres -e POSTGRES_USER=$POSTGRES_USER -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD -e POSTGRES_DB=$POSTGRES_DB -p 5432:5432 -d postgres:16
+          until pg_isready -h localhost -p 5432 -U $POSTGRES_USER; do
+            echo "Waiting for PostgreSQL to be ready..."
+            sleep 1
+          done
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run migrations
+        env:
+          DJANGO_SETTINGS_MODULE: ${{ env.DJANGO_SETTINGS_MODULE }}
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+          TZ: ${{ env.TZ }}
+        run: python manage.py migrate
+
+      - name: Run tests
+        env:
+          DJANGO_SETTINGS_MODULE: ${{ env.DJANGO_SETTINGS_MODULE }}
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+          TZ: ${{ env.TZ }}
+        run: python manage.py test

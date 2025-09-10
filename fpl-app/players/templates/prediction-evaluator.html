@@ -1,0 +1,137 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} - Prediction Evaluator {% endblock %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    {% load url_tags status_colour %}
+
+    <h3>Prediction Evaluator</h3>
+
+    <div style="display: none;" class="hidden_easiest"
+         id="easiest_fdr">{{ easiest }}</div>
+    <div style="display: none;" class="hidden_hardest"
+         id="highest_fdr">{{ hardest }}</div>
+
+    <div class="pcoded-content">
+        <div class="pcoded-inner-content">
+
+            <form name="elementForm" method="get" onchange="elementForm.submit()">
+                {{ filtered_players.form.as_table }}
+            </form>
+            <hr>
+
+            <div id="accuracy" class="custom-text">{{ accuracy }} correct out
+                of {{ total_count }} ({{ percent }}%) where Actual Points >
+                Predicted of {{ filtered_players.form.prediction.value }}</div>
+            <div>This shows, for a given gameweek, what ML predicted for a
+                player and what points they actually got.
+            </div>
+            <div>ML only includes players that have played, on average, more
+                than 60 minutes per game up to that point.
+            </div>
+            <hr>
+
+            <div class="table-responsive">
+                <table class="table custom-table table-bordered table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th>Player</th>
+                        <th>Status</th>
+                        <th>History</th>
+                        <th>Pos</th>
+                        <th>Team</th>
+                        <th>Prediction</th>
+                        <th>Actual Points</th>
+                        <th>Gameweek</th>
+                        <th>Opponent</th>
+                        <th colspan="2">Result</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    {% for player in player_page_obj %}
+                        <tr>
+                            <td class="custom-row-first">{{ player.player.web_name }}</td>
+                            <td>
+                                <button class="btn btn-sm custom-{% get_message_css_status player.player.status %}"
+                                        data-toggle="tooltip"
+                                        data-placement="top"
+                                        title="{{ player.player.get_formatted_news }}">
+                                    <span class="fa fa-info "></span>
+                                </button>
+                            </td>
+                            <td>
+                                <button type="button"
+                                        class="custom-button btn btn-sm btn-primary"
+                                        data-form-url="{% url 'player-history' player.element %}">
+                                    <span class="fa fa-eye"></span>
+                                </button>
+                            </td>
+                            <td>{{ player.player.player_type.singular_name_short }}</td>
+                            <td>{{ player.player.player_team.short_name }}</td>
+                            <td>{{ player.prediction }}</td>
+                            <td>{{ player.total_points }}</td>
+                            <td>{{ player.gameweek }}</td>
+                            <td>{{ player.opponent.name }}</td>
+                            <td>{{ player.result }}</td>
+                            <td>{{ player.home_or_away }} {{ player.game_result }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <ul class="pagination justify-content-center">
+                {% if player_page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{% this_url 1 'page' request.GET.urlencode %}">&laquo;
+                            First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{% this_url player_page_obj.previous_page_number 'page' request.GET.urlencode %}">Previous</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">&laquo; First</a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">Previous</a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <a class="page-link">{{ player_page_obj.number }}</a>
+                </li>
+
+                {% if player_page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{% this_url player_page_obj.next_page_number 'page' request.GET.urlencode %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{% this_url player_page_obj.paginator.num_pages 'page' request.GET.urlencode %}">Last
+                            &raquo;</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">Next</a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">Last &raquo;</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+
+{% block javascripts %}{% endblock javascripts %}

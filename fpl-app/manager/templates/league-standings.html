@@ -1,0 +1,120 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} - Leagues {% endblock %}
+
+{% block content %}
+
+    {% load url_tags %}
+
+    <h3>League Standings for {{ gameweek }} for {{ league.name }}</h3>
+    <form name="elementForm" method="get" onchange="elementForm.submit()">
+        {{ filtered_gameweek.form.as_table }}
+    </form>
+    <div style="display: none;" class="hidden_easiest" id="easiest_fdr">{{ easiest }}</div>
+    <div style="display: none;" class="hidden_hardest" id="highest_fdr">{{ hardest }}</div>
+
+    <hr>
+
+    <div class="pcoded-content">
+        <div class="pcoded-inner-content">
+
+            <div class="table-responsive">
+                <table class="table custom-table table-bordered table-striped table-hover">                <style>
+                    /* Reset the counter for the table */
+                    table {
+                        counter-reset: rowNumber -1;
+                    }
+
+                    /* Increment the counter for each table row */
+                    tr {
+                        counter-increment: rowNumber;
+                    }
+
+                    /* Display the row number in a pseudo-element */
+                    td:first-child:before {
+                        content: counter(rowNumber);
+                        display: inline-block;
+                        width: 20px; /* Adjust the width as needed */
+                        text-align: right;
+                        margin-right: 10px;
+                    }
+                </style>
+                <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Player</th>
+                    <th>Team Name</th>
+                    <th>Event Points</th>
+                    <th>Total Points</th>
+                    <th>Exp Points</th>
+                    <th colspan="15">Team</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for standing in standing_page_obj %}
+                    <tr>
+                        <td class="custom-row-first"></td>
+                        <td>{{ standing.this_league.player_name }}</td>
+                        <td>{{ standing.this_league.entry_name }}</td>
+                        <td>{{ standing.this_league.event_total }}</td>
+                        <td>{{ standing.this_league.total }}</td>
+                        <td>{{ standing.total_expected }}</td>
+                        {% for pick in standing.picks %}
+                            {% for opponent in pick.player.player_team.next_games.itertuples %}
+                                <td class="valueTD custom-row-player
+                                    {% if pick.is_sub %} custom-shaded {% endif %}
+                                    {% if pick.is_captain %} custom-bolded {% endif %}"
+                                    value="{{ opponent.opponents.fdr }}, {{ opponent.opponents.color }}">{{ pick.shortened_player_name }} ({{ pick.player.player_team.short_name }})<BR>({{ pick.expected_points }}) {{ opponent.opponents.show_opponents }}</td>
+                            {% endfor %}
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <ul class="pagination justify-content-center">
+                {% if standing_page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="{% this_url 1 'page' request.GET.urlencode %}">&laquo; First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{% this_url standing_page_obj.previous_page_number 'page' request.GET.urlencode %}">Previous</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">&laquo; First</a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">Previous</a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <a class="page-link">{{ standing_page_obj.number }}</a>
+                </li>
+
+                {% if standing_page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{% this_url standing_page_obj.next_page_number 'page' request.GET.urlencode %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{% this_url standing_page_obj.paginator.num_pages 'page' request.GET.urlencode %}">Last
+                            &raquo;</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">Next</a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">Last &raquo;</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+{% endblock content %}
+

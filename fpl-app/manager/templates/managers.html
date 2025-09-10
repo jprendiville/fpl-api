@@ -1,0 +1,111 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} - My Team {% endblock %}
+
+{% block content %}
+
+    {% load status_colour %}
+
+    <h3>Managers/Player Picker</h3>
+
+    <hr>
+
+    <div style="display: none;" class="hidden_easiest" id="easiest_fdr">{{ easiest }}</div>
+    <div style="display: none;" class="hidden_hardest" id="highest_fdr">{{ hardest }}</div>
+    <div class="pcoded-content">
+        <div class="pcoded-inner-content">
+            {% if managers %}
+
+                {% for manager in managers %}
+
+                    <span><strong>{{ manager.information.formatted_name }} - {{ manager.information.name }} {{ manager.manager_team.display_active_chip}} </strong></span>
+                    <a data-trigger-spinner="true" href="{% url 'leagues' manager.manager_team.id %}" id="leagues-btn" class="custom-button btn btn-sm btn-primary" role="button">Leagues</a>
+                    <a data-trigger-spinner="true" href="{% url 'reset' %}" id="reset-btn" class="btn btn-danger btn-sm" role="button">Reset</a>
+                    <hr>
+                    
+                    <div class="table-responsive">
+                    <table class="table custom-table table-bordered table-striped table-hover">                        <thead>
+                        <tr>
+                            <th colspan="2">Player/Gameweek</th>
+                            <th>Status</th>
+                            <th>History</th>
+                            <th>Pos</th>
+                            <th>Team</th>
+                            <th>Form</th>
+                            <th>Cost</th>
+                            <th>Points</th>
+                            <th>Exp Points</th>
+                            <th title="Value Added per £1M (Points Per Match - 2)/Cost.&#10Taking away 2 points as per match, thus eliminating&#10the effect of points for 60 minutes and diminishes&#10the value of subs)">VAPM</th>
+                            {% for event in events %}
+                                <th style="min-width: 100px;">{{ event.id }}
+                                    <br> {{ event.formatted_deadline }}</th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        {% for pick in manager.picks %}
+                            <tr class="custom-full-row-player">
+                                <td class="custom-row-first-small {% if pick.is_sub %} custom-shaded {% endif %}">{{ pick.position }}</td>
+                                <td class="custom-row-first-large {% if pick.is_sub %} custom-shaded {% endif %}">{{ pick.player_name }}</td>
+                                <td>
+                                    <button class="btn btn-sm custom-{% get_message_css_status pick.player.status %}"
+                                            data-toggle="tooltip" data-placement="top"
+                                            title="{{ pick.player.get_formatted_news }}">
+                                        <span class="fa fa-info "></span>
+                                    </button>
+                                </td>
+                                <td>
+                                    <button type="button" class="custom-button btn btn-sm btn-primary"
+                                            data-form-url="{% url 'player-history' pick.player.pk %}">
+                                        <span class="fa fa-eye"></span>
+                                    </button>
+                                </td>
+                                <td class="custom-row-dets {% if pick.is_sub %} custom-shaded {% endif %}">{{ pick.player.player_type.singular_name_short }}</td>
+                                <td class="custom-row-dets {% if pick.is_sub %} custom-shaded {% endif %}">{{ pick.player.player_team.short_name }}</td>
+                                <td class="custom-row-dets {% if pick.is_sub %} custom-shaded {% endif %}">{{ pick.player.form }}</td>
+                                <td class="custom-row-dets {% if pick.is_sub %} custom-shaded {% endif %}">{{ pick.player.formatted_cost }}</td>
+                                <td class="custom-row-dets {% if pick.is_sub %} custom-shaded {% endif %}">{{ pick.player.total_points }}</td>
+                                <td class="custom-row-dets {% if pick.is_sub %} custom-shaded {% endif %}">{{ pick.format_expected_points }}</td>
+                                <td class="custom-row-value {% if pick.is_sub %} custom-shaded {% endif %}">{{ pick.player.points_value_added_per_m }}</td>
+                                {% for opponent in pick.player.player_team.next_games.itertuples %}
+                                    <td class="valueTD custom-row-opponents"
+                                        value="{{ opponent.opponents.fdr }}, {{ opponent.opponents.color }}">{{ opponent.opponents.show_opponents }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                        <tr>
+                            <td colspan="9"></td>
+                            <td>{{ manager.total_expected }}</td>
+                            <td colspan="{{ events.count }}"></td>
+                        </tr>
+                    </table>
+
+                {% endfor %}
+            {% else %}
+                <div class="mb-3">
+                    <form method="post" data-trigger-spinner="true">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-auto">
+                                {{ manageridform }}
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+                            </div>
+                        </div>
+                        <div id="teamIdHelp" class="form-text">Enter multiple Team Ids separated by a comma</div>
+                        <div id="teamIdHelp" class="form-text">
+                            You can find Team Ids in the URL of your Points page on the
+                            <a href='https://fantasy.premierleague.com/' target='_blank'>Official Fantasy Premier League website</a>.
+                        </div>
+                    </form>
+                </div>
+
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock content %}
+

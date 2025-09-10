@@ -1,0 +1,24 @@
+<footer>
+    <div class="footer">
+        <p>&nbsp;Version: {{ APP_VERSION }}</p>
+    </div>
+
+    <!-- Toast notification -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        {% for message in messages %}
+            {% if message.tags %}
+                {% with tags=message.tags.split %}
+                    <div id="toastMessage-{{ forloop.counter }}" class="toast text-white" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="{{ tags.0 }}" data-status="{{ tags.1 }}">
+                        <div class="toast-body">
+                            {{ message }}
+                        </div>
+                    </div>
+                {% endwith %}
+            {% endif %}
+        {% endfor %}
+    </div>
+
+
+    {% load static %}
+    <script type="text/javascript" src="{% static 'js/footer.js' %}"></script>
+</footer>
