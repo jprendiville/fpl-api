@@ -46,49 +46,6 @@ class PlayerPredictionHistoryView(BSModalReadView):
         return super().get_queryset().filter(id=self.kwargs['pk'])
 
 
-def players(request):
-    """ Respond to a request to display player data by Total Points """
-    context = {}
-
-    order_by = request.GET.get('order_by')
-    direction = request.GET.get('direction')
-    context['order_by'] = order_by
-
-    if order_by is None or direction is None:
-        order_by = 'total_points'
-        direction = 'desc'
-
-    if direction == 'desc':
-        order_by = '-{}'.format(order_by)
-
-    # Get the next game week
-    next_gameweek = get_next_gameweek()
-    events = Event.objects.all().filter(id__gte=next_gameweek.id).order_by('id')[
-             :properties.number_of_gameweeks]
-    context['events'] = events
-
-    filtered_players = PlayerFilter(
-        request.GET,
-        queryset=Player.objects.all().order_by(order_by)
-    )
-    context['filtered_players'] = filtered_players
-
-    # We want to seed the lowest and greatest values possible for fdr
-    context['easiest'] = properties.fdr_easiest
-    context['hardest'] = properties.fdr_hardest
-
-    # Get this page and add the players upcomign fixtures
-    paginated_filtered_players = Paginator(filtered_players.qs, properties.page_size)
-    page_number = request.GET.get('page')
-    player_page_obj = paginated_filtered_players.get_page(page_number)
-    for player in player_page_obj.object_list:
-        player.player_team.next_games = \
-            get_next_n_games_fdr(player.player_team, next_gameweek, properties.number_of_gameweeks)
-    context['player_page_obj'] = player_page_obj
-
-    return render(request, 'players.html', context=context)
-
-
 def transfers(request):
     """ Respond to a request to display transfers In/Out """
     context = {}

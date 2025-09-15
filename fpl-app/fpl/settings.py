@@ -52,7 +52,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
-    'django_filters',
+    "rest_framework",
+    "django_filters",
+    "corsheaders",
+    "drf_spectacular",
     'widget_tweaks',
     'bootstrap_modal_forms',
     'fpl',
@@ -66,6 +69,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -75,6 +79,26 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'fpl.middleware.AccessMiddleware',
 ]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:4200",
+]
+
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 50,
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "FPL API",
+    "VERSION": "1.0.0",
+}
 
 ROOT_URLCONF = 'fpl.urls'
 
