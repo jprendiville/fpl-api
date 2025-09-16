@@ -123,38 +123,6 @@ def price_changes(request):
 
     return render(request, 'price-changes.html', context=context)
 
-
-def defence(request):
-    """ Respond to a request to display defence stats """
-    context = {}
-
-    next_gameweek = get_next_gameweek()
-    events = Event.objects.all().filter(id__gte=next_gameweek.id).order_by('id')[
-             :properties.number_of_gameweeks]
-    context['events'] = events
-
-    filtered_players = PlayerFilter(
-        request.GET,
-        Player.objects.filter(element_type__in=[1,2]).order_by('-clean_sheets')
-    )
-    context['filtered_players'] = filtered_players
-
-    # We want to seed the lowest and greatest values possible for fdr
-    context['easiest'] = properties.fdr_easiest
-    context['hardest'] = properties.fdr_hardest
-
-    # Get this page and add the players upcomign fixtures
-    paginated_filtered_players = Paginator(filtered_players.qs, properties.page_size)
-    page_number = request.GET.get('page')
-    player_page_obj = paginated_filtered_players.get_page(page_number)
-    for player in player_page_obj.object_list:
-        player.player_team.next_games = \
-            get_next_n_games_fdr(player.player_team, next_gameweek, properties.number_of_gameweeks)
-    context['player_page_obj'] = player_page_obj
-
-    return render(request, 'defence.html', context=context)
-
-
 def picker(request):
     """ Respond to a request to display player picker """
     context = {}

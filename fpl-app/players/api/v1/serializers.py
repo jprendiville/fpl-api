@@ -24,3 +24,14 @@ class PlayerListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
         exclude = ("player_team", "player_type")
+
+
+class PlayerDefenceSerializer(serializers.ModelSerializer):
+    # replace raw FKs with nested
+    team = TeamMiniSerializer(source="player_team", read_only=True)
+    type = ElementTypeMiniSerializer(source="player_type", read_only=True)
+
+    class Meta:
+        model = Player
+        # include all model fields except the FK sources (we expose them as team/type above)
+        exclude = ("player_team", "player_type")

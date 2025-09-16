@@ -1,4 +1,6 @@
 import django_filters
+from django_filters import OrderingFilter
+
 from players.models import Player
 
 class PlayerFilter(django_filters.FilterSet):
@@ -22,3 +24,22 @@ class PlayerFilter(django_filters.FilterSet):
             "status",          # /api/v1/players/?status=a
             # You can still pass min_/max_ params above even though they're not listed here
         ]
+
+
+class OrderingFilterCompat(OrderingFilter):
+    def get_schema_operation_parameters(self, view):
+        getter = getattr(super(), "get_schema_operation_parameters", None)
+        if callable(getter):
+            return getter(view)
+        ordering_param = getattr(view, "ordering_param", "ordering")
+        fields = getattr(view, "ordering_fields", None)
+        desc = "Ordering parameter. Use '-' prefix for descending."
+        if fields:
+            desc += f" Allowed values: {', '.join(fields)}."
+        return [{
+            "name": ordering_param,
+            "required": False,
+            "in": "query",
+            "description": desc,
+            "schema": {"type": "string"},
+        }]
