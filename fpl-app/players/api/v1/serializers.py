@@ -23,12 +23,4 @@ class PlayerListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Player
-        fields = (
-            "id", "web_name", "status",
-            "now_cost", "total_points",
-            "selected_by_percent", "event_points",
-            "form", "value_form", "vapm",
-            "team",  # {id,name,short_name,code}
-            "type",  # {id,name}
-        )
-        read_only_fields = fields
+        exclude = ("player_team", "player_type")
