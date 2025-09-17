@@ -4,7 +4,7 @@ from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from players.models import Player
 from .serializers import PlayerDefenceSerializer, PlayerListSerializer
-from .filters import OrderingFilterCompat, PlayerFilter
+from .filters import PlayerFilter
 
 class PlayerViewSet(ReadOnlyModelViewSet):
     """
