@@ -48,6 +48,7 @@ class DefenceViewSet(ReadOnlyModelViewSet):
 
     # Use the same backends as Players
     filter_backends = [DjangoFilterBackend, drf_filters.SearchFilter, drf_filters.OrderingFilter]
+    filterset_class = PlayerFilter
 
     # Optional – add search like Players if you want
     search_fields = [
