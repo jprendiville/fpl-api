@@ -2,8 +2,9 @@ from rest_framework import filters as drf_filters
 from django_filters.rest_framework import DjangoFilterBackend, filters
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
-from players.models import Player
-from .serializers import PlayerDefenceSerializer, PlayerListSerializer
+from players.models import ElementType, Player
+from .serializers import ElementTypeSerializer, PlayerDefenceSerializer, \
+    PlayerListSerializer
 from .filters import PlayerFilter
 
 class PlayerViewSet(ReadOnlyModelViewSet):
@@ -63,3 +64,13 @@ class DefenceViewSet(ReadOnlyModelViewSet):
         "clean_sheets_per_90","goals_conceded_per_90","total_points","form"
     ]
     ordering = ["-clean_sheets", "-total_points", "now_cost"]  # default
+
+
+class ElementTypeViewSet(ReadOnlyModelViewSet):
+    queryset = (
+        ElementType.objects
+        .order_by("id")
+    )
+    serializer_class = ElementTypeSerializer
+    filter_backends = []
+    pagination_class = None

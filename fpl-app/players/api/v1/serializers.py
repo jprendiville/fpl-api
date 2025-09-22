@@ -35,3 +35,8 @@ class PlayerDefenceSerializer(serializers.ModelSerializer):
         model = Player
         # include all model fields except the FK sources (we expose them as team/type above)
         exclude = ("player_team", "player_type")
+
+class ElementTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ElementType
+        fields = "__all__"
