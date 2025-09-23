@@ -1,10 +1,10 @@
-from rest_framework import filters as drf_filters
+from rest_framework import filters as drf_filters, viewsets
 from django_filters.rest_framework import DjangoFilterBackend, filters
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
-from players.models import ElementType, Player
+from players.models import ElementType, Player, PlayerHistory
 from .serializers import ElementTypeSerializer, PlayerDefenceSerializer, \
-    PlayerListSerializer
+    PlayerHistorySerializer, PlayerListSerializer
 from .filters import PlayerFilter
 
 class PlayerViewSet(ReadOnlyModelViewSet):
@@ -36,6 +36,28 @@ class PlayerViewSet(ReadOnlyModelViewSet):
         "event_points", "form", "value_form", "vapm", "web_name", "id",
     ]
     ordering = ["-total_points"]
+
+class PlayerHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = PlayerHistorySerializer
+    pagination_class = None  # modal wants full season in one go
+    filter_backends = [DjangoFilterBackend, drf_filters.OrderingFilter]
+    ordering_fields = ["round", "kickoff_time"]
+
+    def get_queryset(self):
+        qs = (
+            PlayerHistory.objects
+            .select_related("opponent", "player")
+            .order_by("-round", "kickoff_time")
+        )
+        player_id = self.kwargs.get("player_id")
+        if player_id is not None:
+            qs = qs.filter(player_id=player_id)
+        p = self.request.query_params.get("player")
+        if p:
+            qs = qs.filter(player_id=p)
+        return qs
+
+
 
 
 class DefenceViewSet(ReadOnlyModelViewSet):

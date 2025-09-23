@@ -40,3 +40,19 @@ class ElementTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ElementType
         fields = "__all__"
+
+# players/serializers.py
+from rest_framework import serializers
+from players.models.player_history import PlayerHistory  # adjust import to your layout
+
+class PlayerHistorySerializer(serializers.ModelSerializer):
+    opponent_short_name = serializers.CharField(source="opponent.short_name", read_only=True)
+    opponent_name = serializers.CharField(source="opponent.name", read_only=True)
+    home_away = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PlayerHistory
+        fields = '__all__'
+
+    def get_home_away(self, obj: "PlayerHistory") -> str:
+        return 'H' if obj.was_home else 'A'

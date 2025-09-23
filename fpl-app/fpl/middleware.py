@@ -1,54 +1,60 @@
 # middleware.py
 import traceback
-
 from django.shortcuts import render
-
+from django.http import HttpRequest, HttpResponse
 from fpl.properties.properties import get_properties
 from manager.models import ClassicLeague
 
 properties = get_properties()
 
+def _is_api_request(request: HttpRequest) -> bool:
+    # Keep it simple: everything under /api/ is API.
+    # (Optionally also check Accept header for application/json.)
+    return (request.path_info or "").startswith("/api/")
 
 class AccessMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
-    def __call__(self, request):
-        # Check for any exception
-        response = self.get_response(request)
+    def __call__(self, request: HttpRequest) -> HttpResponse:
+        is_api = _is_api_request(request)
 
-        # Check if the URL matches the specific pattern
-        if '/managers/league/' in request.path_info and '/manager/' in request.path_info:
+        # ---------- PRE-VIEW: only gate HTML pages ----------
+        if (not is_api) and ('/managers/league/' in request.path_info and '/manager/' in request.path_info):
             try:
-                path_parts = request.path_info.split('/')
-                league_id_index = path_parts.index('league') + 1
-                league_id = path_parts[league_id_index]
+                parts = [p for p in request.path_info.split('/') if p]  # remove empties
+                league_id = parts[parts.index('league') + 1]
+                manager_id = parts[parts.index('manager') + 1]
 
-                manager_id_index = path_parts.index('manager') + 1
-                manager_id = path_parts[manager_id_index]
+                league = ClassicLeague.objects.get(league_id=league_id, manager_id=manager_id)
 
-                league = ClassicLeague.objects.get(league_id=league_id,
-                                                   manager_id=manager_id)
-
-                # 'x' represents a private league
+                # 'x' = private league? deny access to non-private (keep your logic)
                 if league.league_type != 'x':
-                    context = {}
-                    context['message'] = properties.league_access_denied
-                    return render(request, 'denied-page.html', context=context)
-            except (ValueError, IndexError):
-                # Handle the case where league_id or manager_id is not present in the URL
-                context = {
-                    'message': 'Invalid URL structure: league or manager not found'}
-                return render(request, 'denied-page.html', context=context)
-            except ClassicLeague.DoesNotExist:
-                # Handle the case where the league with the specified league_id is not found
-                context = {'message': 'Manager/League not found'}
-                return render(request, 'denied-page.html', context=context)
+                    return render(request, 'denied-page.html',
+                                  context={'message': properties.league_access_denied},
+                                  status=403)
+            except (ValueError, IndexError, ClassicLeague.DoesNotExist):
+                return render(request, 'denied-page.html',
+                              context={'message': 'Manager/League not found or invalid URL'},
+                              status=404)
 
-        if response.status_code == 500:
-            # Log the exception
+        # ---------- CALL VIEW ----------
+        try:
+            response = self.get_response(request)
+        except Exception:
+            # For API: let DRF handle & format JSON errors
+            if is_api:
+                raise
+            # For HTML: show your server error page
             traceback.print_exc()
-            context = {'message': 'Internal error, try again later'}
-            return render(request, 'server-error.html', context=context)
+            return render(request, 'server-error.html',
+                          context={'message': 'Internal error, try again later'},
+                          status=500)
+
+        # ---------- POST-VIEW: turn 5xx into HTML *only* for non-API ----------
+        if (not is_api) and response.status_code >= 500:
+            return render(request, 'server-error.html',
+                          context={'message': 'Internal error, try again later'},
+                          status=500)
 
         return response
