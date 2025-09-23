@@ -2,8 +2,8 @@ import pandas
 from django.db.models import Q
 
 from fpl.enums.common_enums import FixtureStatIdentifier
-from players.classes.opponent import Opponent
 from players.models import Event, Fixture
+from teams.api.v1.classes.opponent import Opponent
 
 
 def get_last_completed_gameweek():
@@ -49,46 +49,34 @@ def get_next_n_games_fdr(team, next_gameweek, number_of_gameweeks):
     # Get the next n gameweek events
     gameweeks = Event.objects.filter(id__gte=next_gameweek.id).order_by('id')[:number_of_gameweeks]
 
-    # This will be a DataFrame of the teams games. It's prepopulated with gameweek ids
-    games = pandas.DataFrame(gameweeks.values('id'), columns=['event', 'opponents']).astype({'opponents': 'object'})
+    results = []
 
-    # For each gameweek, get the teams opponenets (could be multiple)
-    for gameweek in gameweeks.iterator():
+    for gw in gameweeks.iterator():
+        opponents = Opponent(gw.id)
 
-        # Get a filtered list of this teams next n gameweeks
-        gameweek_games = Fixture.objects.filter(event=gameweek.id)
-        this_teams_gameweek_games = \
-            gameweek_games.filter(Q(team_home_id=team.id) | Q(team_away_id=team.id))
+        # Get fixtures for this team in this gameweek
+        fixtures = Fixture.objects.filter(
+            event=gw.id
+        ).filter(Q(team_home_id=team.id) | Q(team_away_id=team.id))
 
-        for team_game in this_teams_gameweek_games:
-            # Is there anything in this gameweek?
-            # If not the prepopulated dataframe will have an empty entry, which if fine.
-            if team_game:
-                # Home or Away?
-                opponent = Opponent(team_game.event)
-                if team_game.team_away_id == team.id:
-                    oppo_str = team_game.team_home.short_name + ' (A)'
-                    oppo_fdr = team_game.team_a_difficulty
-                else:
-                    oppo_str = team_game.team_away.short_name + ' (H)'
-                    oppo_fdr = team_game.team_h_difficulty
+        for fixture in fixtures:
+            if fixture.team_away_id == team.id:
+                oppo_str = f"{fixture.team_home.short_name} (A)"
+                oppo_fdr = fixture.team_a_difficulty
+            else:
+                oppo_str = f"{fixture.team_away.short_name} (H)"
+                oppo_fdr = fixture.team_h_difficulty
 
-                # Do we already have an entry? If so, update it. The calculation on the index
-                # below is to equate the gameweek id to an index of the DataFrame. So if the
-                # starting gameweek is 22 and this gameweek is 22 we want the index to be 0.
-                # If this gameweek is 24 we want the index to be 2
-                index = team_game.event - next_gameweek.id
-                if team_game.event in games.event.values:
-                    games.iloc[index]['opponents'].add_team(oppo_str)
-                    games.iloc[index]['opponents'].color = 999
-                    games.iloc[index]['opponents'].fdr += oppo_fdr
-                else:
-                    opponent.add_team(oppo_str)
-                    opponent.color = oppo_fdr
-                    opponent.fdr = oppo_fdr
-                    games.loc[index] = [opponent.event, opponent]
+            opponents.add_team(oppo_str)
+            opponents.color = oppo_fdr
+            opponents.fdr += oppo_fdr
 
-    return games
+        results.append({
+            "event": gw.id,
+            "opponents": opponents.to_dict() if opponents.teams else None,
+        })
+
+    return results
 
 
 def get_fixture_stats(gameweek, fixture):

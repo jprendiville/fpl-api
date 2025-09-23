@@ -1,8 +1,12 @@
 # players/api/v1/serializers.py
 from rest_framework import serializers
+
+from common.utils import get_next_gameweek, get_next_n_games_fdr
+from fpl.properties.properties import get_properties
 from players.models import Player, ElementType
 from teams.api.v1.serializers import TeamMiniSerializer
 
+properties = get_properties()
 
 class ElementTypeMiniSerializer(serializers.ModelSerializer):
     class Meta:
@@ -20,21 +24,39 @@ class ElementTypeMiniSerializer(serializers.ModelSerializer):
 class PlayerListSerializer(serializers.ModelSerializer):
     team = TeamMiniSerializer(source="player_team", read_only=True)
     type = ElementTypeMiniSerializer(source="player_type", read_only=True)
+    next_games = serializers.SerializerMethodField()
 
     class Meta:
         model = Player
         exclude = ("player_team", "player_type")
+
+    def get_next_games(self, obj):
+        next_gameweek = get_next_gameweek()
+        return get_next_n_games_fdr(
+            obj.player_team,
+            next_gameweek,
+            properties.number_of_gameweeks,
+        )
 
 
 class PlayerDefenceSerializer(serializers.ModelSerializer):
     # replace raw FKs with nested
     team = TeamMiniSerializer(source="player_team", read_only=True)
     type = ElementTypeMiniSerializer(source="player_type", read_only=True)
+    next_games = serializers.SerializerMethodField()
 
     class Meta:
         model = Player
         # include all model fields except the FK sources (we expose them as team/type above)
         exclude = ("player_team", "player_type")
+
+    def get_next_games(self, obj):
+        next_gameweek = get_next_gameweek()
+        return get_next_n_games_fdr(
+            obj.player_team,
+            next_gameweek,
+            properties.number_of_gameweeks,
+        )
 
 class ElementTypeSerializer(serializers.ModelSerializer):
     class Meta:

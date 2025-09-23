@@ -4,8 +4,7 @@ from rest_framework import serializers
 from common.models.event import Event
 
 
-class EventMiniSerializer(serializers.ModelSerializer):
+class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
-
-
+        fields = ("__all__")
