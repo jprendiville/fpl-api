@@ -257,10 +257,15 @@ class TestModels(TestCase):
 
     def test_team_fdr_next_games(self):
         """ Testing FDR next games """
-        # We have setup two teams to play each other, so there should only be one game.
-        # For team_no_game there are no fixtures
-        assert get_next_n_games_fdr(self.home_team, self.event_current, 100).notna().all(axis=1).sum() == 1
-        assert get_next_n_games_fdr(self.team_no_games, self.event_current, 100).isnull().values.any()
+        home_games = get_next_n_games_fdr(self.home_team, self.event_current, 100)
+        team_no_games = get_next_n_games_fdr(self.team_no_games, self.event_current, 100)
+
+        # We expect exactly one fixture for home_team
+        assert len([g for g in home_games if g.get("opponents")]) == 1
+    
+        # We expect no fixtures for team_no_games
+        assert all(g.get("opponents") is None for g in team_no_games)
+
 
     def test_element_type(self):
         """ Test that an element type can be created and is valid """
