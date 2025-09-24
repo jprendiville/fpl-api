@@ -4,7 +4,7 @@ from rest_framework import serializers
 from common.utils import get_next_gameweek, get_next_n_games_fdr
 from fpl.properties.properties import get_properties
 from players.models import Player, ElementType
-from teams.api.v1.serializers import TeamMiniSerializer
+from teams.api.v1.serializers import TeamSerializer
 
 properties = get_properties()
 
@@ -22,7 +22,7 @@ class ElementTypeMiniSerializer(serializers.ModelSerializer):
 
 
 class PlayerListSerializer(serializers.ModelSerializer):
-    team = TeamMiniSerializer(source="player_team", read_only=True)
+    team = TeamSerializer(source="player_team", read_only=True)
     type = ElementTypeMiniSerializer(source="player_type", read_only=True)
     next_games = serializers.SerializerMethodField()
 
@@ -41,7 +41,7 @@ class PlayerListSerializer(serializers.ModelSerializer):
 
 class PlayerDefenceSerializer(serializers.ModelSerializer):
     # replace raw FKs with nested
-    team = TeamMiniSerializer(source="player_team", read_only=True)
+    team = TeamSerializer(source="player_team", read_only=True)
     type = ElementTypeMiniSerializer(source="player_type", read_only=True)
     next_games = serializers.SerializerMethodField()
 
