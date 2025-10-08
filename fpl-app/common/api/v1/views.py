@@ -28,3 +28,13 @@ class EventViewSet(ReadOnlyModelViewSet):
         )
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=["get"])
+    def finished(self, request):
+        qs = (
+            Event.objects.filter(finished=True)
+            .order_by("-id")
+        )
+        serializer = self.get_serializer(qs, many=True)
+        print(serializer)
+        return Response(serializer.data)

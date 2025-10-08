@@ -22,3 +22,16 @@ class TeamFdrSerializer(serializers.ModelSerializer):
     def get_next_games(self, team):
         next_gw = get_current_gameweek()
         return get_next_n_games_fdr(team, next_gw, properties.number_of_gameweeks)
+
+class LeagueTableSerializer(serializers.Serializer):
+    rank = serializers.IntegerField()
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    played = serializers.IntegerField()
+    wins = serializers.IntegerField()
+    draws = serializers.IntegerField()
+    losses = serializers.IntegerField()
+    goals_for = serializers.IntegerField()
+    goals_against = serializers.IntegerField()
+    goal_difference = serializers.IntegerField()
+    total_points = serializers.IntegerField()

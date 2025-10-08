@@ -2,9 +2,9 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from common.api.v1.views import EventViewSet
-from players.api.v1.views import DefenceViewSet, ElementTypeViewSet, \
+from players.api.v1.views import DefenceViewSet, \
     PlayerHistoryViewSet, PlayerViewSet
-from teams.api.v1.views import FdrViewSet, TeamViewSet
+from teams.api.v1.views import FdrViewSet, LeagueTableViewSet, TeamViewSet
 
 router = DefaultRouter()
 router.register(r"players", PlayerViewSet, basename="players")
@@ -13,6 +13,7 @@ router.register(r"teams", TeamViewSet, basename="teams")
 router.register(r"element-types", TeamViewSet, basename="element-types")
 router.register(r"events", EventViewSet, basename="event")
 router.register(r"fdr", FdrViewSet, basename="fdr")
+router.register(r"league-table", LeagueTableViewSet, basename="league-table")
 player_history_list = PlayerHistoryViewSet.as_view({'get': 'list'})
 
 urlpatterns = [

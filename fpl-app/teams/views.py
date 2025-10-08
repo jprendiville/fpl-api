@@ -19,52 +19,6 @@ logger = logging.getLogger(__name__)
 
 properties = get_properties()
 
-# Create your views here.
-def fdr(request):
-    """ Respond to a request to display FDR data """
-    context = {}
-    # Get the next game week
-    next_gameweek = get_current_gameweek()
-    events = Event.objects.all().filter(id__gte=next_gameweek.id).order_by('id')[
-             :properties.number_of_gameweeks]
-    context['events'] = events
-
-    # Load the teams
-    teams = Team.objects.all().order_by('name')
-    # Load the next n gameweeks for each team
-    for team in teams:
-        team.next_games = get_next_n_games_fdr(team, next_gameweek, properties.number_of_gameweeks)
-    context['teams'] = teams
-
-    # We want to seed the lowest and greatest values possible for fdr
-    context['easiest'] = properties.fdr_easiest
-    context['hardest'] = properties.fdr_hardest
-
-    return render(request, 'fdr.html', context)
-
-def league_table(request):
-    """ Respond to a request to display league table """
-    form = LeagueTableForm(request.GET or None)
-    league_table = None
-    if form.is_valid():
-        gameweek = form.cleaned_data.get('gameweek')
-        event_date = form.cleaned_data.get('event_date')
-
-        if gameweek:
-            league_table = get_league_table_by_gameweek(gameweek.id, None)
-        elif event_date:
-            league_table = get_league_table_by_gameweek(None, event_date)
-    else:
-        league_table = get_league_table_by_gameweek(get_current_gameweek().id, None)
-
-    context = {
-        'form': form,
-        'league_table': league_table
-    }
-
-    return render(request, 'league-table.html', context)
-
-
 def live_fixtures(request):
     """ Respond to a request to display fixtures """
     form = GameweekForm(request.GET or None)
