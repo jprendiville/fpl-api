@@ -22,11 +22,12 @@ from django.core.exceptions import PermissionDenied
 from requests import RequestException,  request
 
 from common.models.last_updated import LastUpdated
-from common.utils import get_current_gameweek
+from common.utils import get_current_gameweek, get_next_n_games_fdr
 from fpl.enums.common_enums import DataTypeIdentifier
 from fpl.exceptions.manager_exceptions import ManagerNotFoundError, \
     PickNotFoundError
 from fpl.properties.properties import check_update_required, get_properties
+from manager.classes.manager import Manager
 from manager.models import ClassicLeague, ClassicLeagueLiveStandings, \
     ClassicLeaguePhase, \
     ClassicLeagueStandings, History, \
@@ -41,6 +42,31 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 properties = get_properties()
+
+def load_manager(manager_id, league_id, number_of_gameweeks, current_gameweek, last_completed_gameweek):
+    """ Load (or re-load) a managers details to the database """
+    try:
+        get_or_save_manager_team(league_id, manager_id, last_completed_gameweek)
+
+    except PermissionDenied:
+        # Manager not found for this gameweek, so it's the current gameweek.
+        # In this scenario, load the previous gameweek with 0 points.
+        raise
+
+    manager_team = ManagerTeam.objects.get(id=manager_id)
+    information = Information.objects.get(pk=manager_id)
+    classic_leagues = ClassicLeague.objects.filter(manager_id=manager_id)
+    this_league = ClassicLeagueStandings.objects.filter(league_id=league_id, entry=manager_id, gameweek=last_completed_gameweek).first()
+
+    picks = Pick.objects.all().filter(manager_id=manager_id, gameweek=last_completed_gameweek.id)
+    total_expected = 0
+    for pick in picks:
+        total_expected += pick.expected_points()
+        pick.player.player_team.next_games = get_next_n_games_fdr(pick.player.player_team,
+                                                                  current_gameweek,
+                                                                  number_of_gameweeks)
+
+    return Manager(manager_team, information, picks, classic_leagues, this_league, total_expected)
 
 
 def parse_and_save_history(manager, manager_data):

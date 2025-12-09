@@ -57,9 +57,6 @@ class PlayerHistoryViewSet(viewsets.ReadOnlyModelViewSet):
             qs = qs.filter(player_id=p)
         return qs
 
-
-
-
 class DefenceViewSet(ReadOnlyModelViewSet):
     queryset = (
         Player.objects

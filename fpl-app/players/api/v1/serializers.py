@@ -4,7 +4,9 @@ from rest_framework import serializers
 from common.utils import get_next_gameweek, get_next_n_games_fdr
 from fpl.properties.properties import get_properties
 from players.models import Player, ElementType
+from players.models.player_history import PlayerHistory
 from teams.api.v1.serializers import TeamSerializer
+from rest_framework import serializers
 
 properties = get_properties()
 
@@ -62,10 +64,6 @@ class ElementTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ElementType
         fields = "__all__"
-
-# players/serializers.py
-from rest_framework import serializers
-from players.models.player_history import PlayerHistory  # adjust import to your layout
 
 class PlayerHistorySerializer(serializers.ModelSerializer):
     opponent_short_name = serializers.CharField(source="opponent.short_name", read_only=True)
