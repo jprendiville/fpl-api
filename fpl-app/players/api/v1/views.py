@@ -37,7 +37,7 @@ class PlayerViewSet(ReadOnlyModelViewSet):
     ]
     ordering = ["-total_points"]
 
-class PlayerHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+class PlayerHistoryViewSet(ReadOnlyModelViewSet):
     serializer_class = PlayerHistorySerializer
     pagination_class = None  # modal wants full season in one go
     filter_backends = [DjangoFilterBackend, drf_filters.OrderingFilter]

@@ -97,3 +97,7 @@ class ManagerLeaguesSerializer(serializers.Serializer):
     information = ManagerInfoSerializer()
     manager_team = ManagerTeamSerializer()
     classic_leagues = ClassicLeagueSerializer(many=True)
+
+class ReloadLeagueSerializer(serializers.Serializer):
+    league_id = serializers.IntegerField(min_value=1)
+    manager_id = serializers.IntegerField(min_value=1)

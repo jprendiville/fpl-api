@@ -5,7 +5,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('transfers', views.transfers, name='transfers'),
     path('price-changes', views.price_changes, name='price-changes'),
     path('picker', views.picker, name='picker'),
     path('predictions', views.predictions, name='predictions'),

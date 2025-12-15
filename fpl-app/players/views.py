@@ -46,41 +46,6 @@ class PlayerPredictionHistoryView(BSModalReadView):
         return super().get_queryset().filter(id=self.kwargs['pk'])
 
 
-def transfers(request):
-    """ Respond to a request to display transfers In/Out """
-    context = {}
-
-    # Get the next game week
-    next_gameweek = get_current_gameweek()
-    events = Event.objects.all().filter(id__gte=next_gameweek.id).order_by('id')[
-             :properties.number_of_gameweeks]
-    context['events'] = events
-
-    filtered_transfers_in = PlayerFilter(
-        request.GET,
-        queryset=Player.objects.all().order_by('-transfers_in_event')
-    )
-    filtered_transfers_out = PlayerFilter(
-        request.GET,
-        queryset=Player.objects.all().order_by('-transfers_out_event')
-    )
-    context['filtered_transfers_in'] = filtered_transfers_in
-    context['filtered_transfers_out'] = filtered_transfers_out
-
-    # Get this page
-    page_number = request.GET.get('page')
-    paginated_filtered_players_in = Paginator(filtered_transfers_in.qs, properties.page_size)
-    paginated_filtered_players_out = Paginator(filtered_transfers_out.qs, properties.page_size)
-
-    transfers_in_page_obj = paginated_filtered_players_in.get_page(page_number)
-    transfers_out_page_obj = paginated_filtered_players_out.get_page(page_number)
-
-    context['transfers_in_page_obj'] = transfers_in_page_obj
-    context['transfers_out_page_obj'] = transfers_out_page_obj
-
-    return render(request, 'transfers.html', context=context)
-
-
 def price_changes(request):
     """ Respond to a request to display price changes """
     context = {}

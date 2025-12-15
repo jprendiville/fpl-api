@@ -214,28 +214,3 @@ def set_dummy_manager(manager):
     return Manager(manager_team, information, picks,
                             classic_leagues, this_league,
                             total_expected)
-
-
-def reload_league(request, id, manager_id):
-    """
-    Reloads a league by deleting its existing standings and recalculating them
-    based on finished and data_checked events.
-
-    Args:
-        request (HttpRequest): The HTTP request object.
-        id (int): The ID of the league to reload.
-        manager_id (int): The ID of the manager.
-
-    Returns:
-        HttpResponseRedirect: A redirect to the 'leagues' page with the manager
-        ID as a parameter.
-    """
-
-    events = Event.objects.filter(finished=True, data_checked=True).order_by('id')
-
-    ClassicLeagueStandings.objects.filter(league_id=id).delete()
-
-    for event in events:
-        get_league_standings(id,manager_id, event)
-
-    return redirect('leagues', manager_id = manager_id)

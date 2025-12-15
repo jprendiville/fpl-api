@@ -3,19 +3,24 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (
     OpenApiExample, OpenApiParameter, extend_schema
 )
+from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
 
 from common.api.v1.views import properties
+from common.models.event import Event
 from common.utils import get_current_gameweek, get_last_completed_gameweek
-from fpl.dataloader.load.load_managers import load_manager
+from fpl.dataloader.load.load_managers import get_league_standings, \
+    load_manager
 
 from .serializers import (
     ManagerSerializer,
-    ManagerLeaguesSerializer,   # <-- add this import
+    ManagerLeaguesSerializer, ReloadLeagueSerializer,  # <-- add this import
 )
+from ...models import ClassicLeagueStandings
+
 
 class ManagersViewSet(ViewSet):
     """
@@ -159,3 +164,33 @@ class ManagersViewSet(ViewSet):
             "classic_leagues": getattr(mgr, "classic_leagues", []) or [],
         }
         return Response(ManagerLeaguesSerializer(payload).data)
+
+
+class ClassicLeagueReloadView(APIView):
+    """
+    POST /api/v1/reload-league/<league_id>/
+    Body: { "manager_id": 1162054 }
+    """
+    def post(self, request, league_id: int):
+        manager_id = request.data.get("manager_id") or request.query_params.get("manager_id")
+        if not manager_id:
+            return Response({"detail": "manager_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            manager_id = int(manager_id)
+        except ValueError:
+            return Response({"detail": "manager_id must be an integer"}, status=status.HTTP_400_BAD_REQUEST)
+
+        events = Event.objects.filter(finished=True, data_checked=True).order_by("id")
+        ClassicLeagueStandings.objects.filter(league_id=league_id).delete()
+        for ev in events:
+            get_league_standings(league_id, manager_id, ev)
+
+        return Response(
+            {
+                "status": "ok",
+                "league_id": league_id,
+                "manager_id": manager_id,
+                "events_processed": events.count(),
+            },
+            status=status.HTTP_200_OK,
+        )
