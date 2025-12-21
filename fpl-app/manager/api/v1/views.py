@@ -16,10 +16,10 @@ from fpl.dataloader.load.load_managers import get_league_standings, \
     load_manager
 
 from .serializers import (
-    ManagerSerializer,
+    LeagueProgressionResponseSerializer, ManagerSerializer,
     ManagerLeaguesSerializer, ReloadLeagueSerializer,  # <-- add this import
 )
-from ...models import ClassicLeagueStandings
+from ...models import ClassicLeague, ClassicLeagueStandings
 
 
 class ManagersViewSet(ViewSet):
@@ -194,3 +194,76 @@ class ClassicLeagueReloadView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+class LeagueProgressionView(APIView):
+    """
+    GET /api/v1/league-progression/<league_id>/?limit=20
+    Returns:
+        {
+          "league_name": "...",
+          "frames": [
+            { "gameweek": 1, "standings": [ { "player_name": "...", "total": 42 }, ... ] },
+            ...
+          ],
+          "players_to_show": 20
+        }
+    """
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name="limit", type=OpenApiTypes.INT, required=False,
+                             description="Top N players per gameweek (default from properties)"),
+        ],
+        responses={200: LeagueProgressionResponseSerializer},
+        summary="Progression frames for a league (top N per gameweek)"
+    )
+    def get(self, request, league_id: int):
+        # league name
+        league_name = (
+                          ClassicLeague.objects
+                          .filter(league_id=league_id)
+                          .values_list("name", flat=True)
+                          .first()
+                      ) or ""
+
+        # limit (top N per GW)
+        try:
+            limit = int(request.query_params.get("limit", "") or 0)
+        except ValueError:
+            limit = 0
+        if limit <= 0:
+            limit = getattr(properties, "progression_players_to_show", 20)
+
+        # standings per GW
+        qs = (
+            ClassicLeagueStandings.objects
+            .filter(league_id=league_id)
+            .order_by("gameweek", "player_name")
+            .values("gameweek", "player_name", "total")
+        )
+
+        # Build frames: {gw: [{player_name, total}, ...]}
+        frames_dict: dict[int, list[dict]] = {}
+        for row in qs:
+            gw = int(row["gameweek"])
+            frames_dict.setdefault(gw, []).append({
+                "player_name": row["player_name"],
+                "total": int(row["total"] or 0),
+            })
+
+        # Per frame, take top N by total, then sort descending by total
+        frames = []
+        for gw in sorted(frames_dict.keys()):
+            standings = frames_dict[gw]
+            standings.sort(key=lambda r: r["total"], reverse=True)
+            frames.append({
+                "gameweek": gw,
+                "standings": standings[:limit],
+            })
+
+        payload = {
+            "league_name": league_name,
+            "frames": frames,
+            "players_to_show": limit,
+        }
+        return Response(payload, status=status.HTTP_200_OK)

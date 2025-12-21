@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from common.api.v1.views import EventViewSet
 from manager.api.v1.views import ClassicLeagueReloadView, \
-    ManagersViewSet
+    LeagueProgressionView, ManagersViewSet
 from players.api.v1.views import DefenceViewSet, \
     PlayerHistoryViewSet, PlayerViewSet
 from teams.api.v1.views import FdrViewSet, LeagueTableViewSet, TeamViewSet
@@ -23,4 +23,5 @@ urlpatterns = [
     path('', include(router.urls)),
     path('players/<int:player_id>/player-history/', player_history_list, name='player-history-by-player'),
     path("reload-league/<int:league_id>/", ClassicLeagueReloadView.as_view(), name="reload-league"),
+    path("league-progression/<int:league_id>/", LeagueProgressionView.as_view(), name="league-progression"),
 ]

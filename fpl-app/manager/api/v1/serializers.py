@@ -101,3 +101,16 @@ class ManagerLeaguesSerializer(serializers.Serializer):
 class ReloadLeagueSerializer(serializers.Serializer):
     league_id = serializers.IntegerField(min_value=1)
     manager_id = serializers.IntegerField(min_value=1)
+
+class ProgressionStandingSerializer(serializers.Serializer):
+    player_name = serializers.CharField()
+    total = serializers.IntegerField()
+
+class ProgressionFrameSerializer(serializers.Serializer):
+    gameweek = serializers.IntegerField()
+    standings = ProgressionStandingSerializer(many=True)
+
+class LeagueProgressionResponseSerializer(serializers.Serializer):
+    league_name = serializers.CharField(allow_blank=True)
+    frames = ProgressionFrameSerializer(many=True)
+    players_to_show = serializers.IntegerField()
