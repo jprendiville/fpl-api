@@ -14,7 +14,9 @@ check_manager_needs_updating
 
 import json
 import logging
+from calendar import HTMLCalendar
 from datetime import datetime, timedelta, timezone
+from urllib.error import HTTPError
 
 from dateutil import tz
 from django.db.models import Q, Subquery
@@ -267,6 +269,9 @@ def get_or_save_manager_team(league_id, manager_id, this_gameweek):
     :param manager_id: league id,  managers id, this gameweek
     """
 
+    if manager_id == 9519339:
+        i = 0
+
     try:
         # Only need to do this if the gameweek data has been checked and is finished, or it doesn't exist
         if not manager_needs_updating(league_id, manager_id, this_gameweek):
@@ -283,6 +288,9 @@ def get_or_save_manager_team(league_id, manager_id, this_gameweek):
         response = custom_session.custom_request('GET', properties.base_url
                         + properties.manager_base_url.format(manager_id)
                         + properties.manager_picks_url.format(this_gameweek))
+        if response.status_code == 404:
+            logger.info("Picks for Gameweek %s for Manager %s don't exist, skipping....", this_gameweek, manager_id)
+            return
     except PermissionDenied:
         # Re-raise the exception
         raise
