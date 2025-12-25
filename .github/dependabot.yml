@@ -1,0 +1,8 @@
+version: 2
+updates:
+  - package-ecosystem: "pip" # For Django/Python
+    directory: "/"
+    schedule:
+      interval: "weekly" # Options: daily, weekly, monthly
+    target-branch: "develop" # Crucial: Tells Dependabot to target your dev branch
+    open-pull-requests-limit: 5 # Stops the bot from spamming too many PRs
