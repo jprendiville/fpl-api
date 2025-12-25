@@ -1,4 +1,4 @@
-APScheduler==3.9.1
+APScheduler==3.11.2
 Django==5.1.15
 django_bootstrap_modal_forms==2.2.0
 django-widget-tweaks==1.4.2
