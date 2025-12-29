@@ -9,5 +9,4 @@ urlpatterns = [
          views.classic_league_standings, name='league'),
     path('live/<int:id>/manager/<int:manager_id>',
          views.classic_league_live, name='live'),
-    path('progression/<int:id>', views.progression, name='progression'),
 ]

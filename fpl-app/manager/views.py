@@ -154,54 +154,6 @@ def classic_league_live(request, id, manager_id):
 
     return render(request, 'league-live.html', context=context)
 
-
-def progression(request, id):
-    """
-    Generates a progression report for a specific league.
-
-    Args:
-        request (HttpRequest): The HTTP request object.
-        id (int): The ID of the league.
-
-    Returns:
-        HttpResponse: The rendered HTML template for the progression report.
-    """
-
-    context = {}
-
-    league_name = ClassicLeague.objects.filter(league_id=id).values_list('name', flat=True).first()
-
-    # Fetch all gameweeks' data for the top 20 players
-    standings = (
-        ClassicLeagueStandings.objects
-        .filter(league_id=id)
-        .order_by('gameweek', 'player_name')
-        .values('gameweek', 'player_name', 'total')
-    )
-
-    players_data = {}
-
-    for entry in standings:
-        gameweek = str(entry['gameweek'])
-        player_name = entry['player_name']
-        total = entry['total']
-
-        # Initialize the year in allData if not already present
-        if gameweek not in players_data:
-            players_data[gameweek] = {}
-
-        # Assign the total value to the corresponding player_name in the year
-        players_data[gameweek][player_name] = total
-
-    context['league_name'] = league_name
-    context['players_data'] = players_data
-    context['players_to_show'] = properties.progression_players_to_show
-
-    return render(request, 'progression.html', context=context)
-
-
-
-
 def set_dummy_manager(manager):
     manager_team = ManagerTeam()
     information = Information(name=manager.entry_name,

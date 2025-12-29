@@ -1,11 +1,19 @@
 from rest_framework import filters as drf_filters, viewsets
 from django_filters.rest_framework import DjangoFilterBackend, filters
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
+from common.models.event import Event
+from common.utils import get_current_gameweek
+from fpl.properties.properties import get_properties
 from players.models import ElementType, Player, PlayerHistory
 from .serializers import ElementTypeSerializer, PlayerDefenceSerializer, \
     PlayerHistorySerializer, PlayerListSerializer
 from .filters import PlayerFilter
+
+properties = get_properties()
 
 class PlayerViewSet(ReadOnlyModelViewSet):
     """
@@ -83,6 +91,20 @@ class DefenceViewSet(ReadOnlyModelViewSet):
         "clean_sheets_per_90","goals_conceded_per_90","total_points","form"
     ]
     ordering = ["-clean_sheets", "-total_points", "now_cost"]  # default
+
+class TransfersInViewSet(ReadOnlyModelViewSet):
+    serializer_class = PlayerListSerializer
+
+    def get_queryset(self):
+        qs = Player.objects.order_by("-transfers_in_event")
+        return PlayerFilter(self.request.GET, queryset=qs).qs
+
+class TransfersOutViewSet(ReadOnlyModelViewSet):
+    serializer_class = PlayerListSerializer
+
+    def get_queryset(self):
+        qs = Player.objects.order_by("-transfers_out_event")
+        return PlayerFilter(self.request.GET, queryset=qs).qs
 
 
 class ElementTypeViewSet(ReadOnlyModelViewSet):
