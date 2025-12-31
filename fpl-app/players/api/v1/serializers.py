@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from common.utils import get_next_gameweek, get_next_n_games_fdr
 from fpl.properties.properties import get_properties
-from players.models import Player, ElementType
+from players.models import Player, ElementType, PlayerPrediction
 from players.models.player_history import PlayerHistory
 from teams.api.v1.serializers import TeamSerializer
 from rest_framework import serializers
@@ -76,3 +76,48 @@ class PlayerHistorySerializer(serializers.ModelSerializer):
 
     def get_home_away(self, obj: "PlayerHistory") -> str:
         return 'H' if obj.was_home else 'A'
+
+class PlayerPredictionSerializer(serializers.ModelSerializer):
+    player = PlayerListSerializer(read_only=True)
+
+    class Meta:
+        model = PlayerPrediction
+        fields = [
+            "id",
+            "player",
+            "prediction",
+            "gameweek_id",
+        ]
+
+class PlayerPredictionHistorySerializer(serializers.ModelSerializer):
+    opponent_short_name = serializers.CharField(source="opponent.short_name", read_only=True)
+    opponent_name = serializers.CharField(source="opponent.name", read_only=True)
+    home_away = serializers.SerializerMethodField()
+    web_name = serializers.CharField(source="player.web_name", read_only=True)
+    team = TeamSerializer(source="player.player_team", read_only=True)
+    position = serializers.CharField(source="player.player_type.singular_name_short", read_only=True)
+
+    class Meta:
+        model = PlayerPrediction
+        fields = [
+            "id",
+            "opponent_short_name",
+            "opponent_name",
+            "home_away",
+            "web_name",
+            "team",
+            "position",
+            "element",
+            "total_points",
+            "prediction",
+            "team_h_score",
+            "team_a_score",
+            "was_home",
+            "finished",
+            "last_updated",
+            "season",
+            "gameweek",
+        ]
+
+    def get_home_away(self, obj):
+        return "H" if obj.was_home else "A"

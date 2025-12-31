@@ -1,3 +1,6 @@
+import logging
+
+from django.db.models import Max
 from rest_framework import filters as drf_filters, viewsets
 from django_filters.rest_framework import DjangoFilterBackend, filters
 from rest_framework.pagination import PageNumberPagination
@@ -8,10 +11,15 @@ from rest_framework.viewsets import ReadOnlyModelViewSet
 from common.models.event import Event
 from common.utils import get_current_gameweek
 from fpl.properties.properties import get_properties
-from players.models import ElementType, Player, PlayerHistory
+from players.models import ElementType, Player, PlayerHistory, PlayerPrediction
 from .serializers import ElementTypeSerializer, PlayerDefenceSerializer, \
-    PlayerHistorySerializer, PlayerListSerializer
+    PlayerHistorySerializer, PlayerListSerializer, \
+    PlayerPredictionHistorySerializer, PlayerPredictionSerializer
 from .filters import PlayerFilter
+from ...filters import PredictionsFilter
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 properties = get_properties()
 
@@ -50,6 +58,7 @@ class PlayerHistoryViewSet(ReadOnlyModelViewSet):
     pagination_class = None  # modal wants full season in one go
     filter_backends = [DjangoFilterBackend, drf_filters.OrderingFilter]
     ordering_fields = ["round", "kickoff_time"]
+    logger.info("PlayerHistoryViewSet")
 
     def get_queryset(self):
         qs = (
@@ -64,6 +73,77 @@ class PlayerHistoryViewSet(ReadOnlyModelViewSet):
         if p:
             qs = qs.filter(player_id=p)
         return qs
+
+
+class PredictionsViewSet(ReadOnlyModelViewSet):
+    """
+    Endpoints:
+      - GET /api/v1/predictions/         (list, paginated)
+      - GET /api/v1/predictions/{id}/    (detail)
+    """
+
+    serializer_class = PlayerPredictionSerializer
+
+    # Filtering / searching / ordering
+    filter_backends = [DjangoFilterBackend, drf_filters.SearchFilter, drf_filters.OrderingFilter]
+    filterset_class = PredictionsFilter
+    logger.info("PredictionsViewSet")
+
+    search_fields = [
+        "player__web_name",
+        "player__first_name",
+        "player__second_name",
+        "player__player_team__name",
+        "player__player_team__short_name",
+    ]
+
+    ordering_fields = [
+        "prediction",
+        "player__web_name",
+        "player__id",
+    ]
+    ordering = ["-prediction"]
+
+    def get_queryset(self):
+        """
+        Equivalent to the queryset in your PlayerViewSet,
+        but for PlayerPrediction instead of Player.
+        """
+        latest_gw = (
+            PlayerPrediction.objects
+            .aggregate(Max("gameweek_id"))
+            .get("gameweek_id__max")
+        )
+
+        return (
+            PlayerPrediction.objects
+            .select_related("player", "player__player_team", "player__player_type")
+            .filter(gameweek_id=latest_gw)
+            .order_by("-prediction")
+        )
+
+
+class PlayerPredictionHistoryViewSet(ReadOnlyModelViewSet):
+    serializer_class = PlayerPredictionHistorySerializer
+    pagination_class = None  # modal wants full season in one go
+    filter_backends = [DjangoFilterBackend, drf_filters.OrderingFilter]
+    ordering_fields = ["round", "kickoff_time"]
+    logger.info("PlayerPredictionHistoryViewSet")
+
+    def get_queryset(self):
+        qs = (
+            PlayerPrediction.objects
+            .select_related("opponent", "player")
+            .order_by("-gameweek")
+        )
+        player_id = self.kwargs.get("player_id")
+        if player_id is not None:
+            qs = qs.filter(player_id=player_id)
+        p = self.request.query_params.get("player")
+        if p:
+            qs = qs.filter(player_id=p)
+        return qs
+
 
 class DefenceViewSet(ReadOnlyModelViewSet):
     queryset = (
@@ -92,12 +172,14 @@ class DefenceViewSet(ReadOnlyModelViewSet):
     ]
     ordering = ["-clean_sheets", "-total_points", "now_cost"]  # default
 
+
 class TransfersInViewSet(ReadOnlyModelViewSet):
     serializer_class = PlayerListSerializer
 
     def get_queryset(self):
         qs = Player.objects.order_by("-transfers_in_event")
         return PlayerFilter(self.request.GET, queryset=qs).qs
+
 
 class TransfersOutViewSet(ReadOnlyModelViewSet):
     serializer_class = PlayerListSerializer
