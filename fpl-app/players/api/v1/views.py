@@ -58,7 +58,6 @@ class PlayerHistoryViewSet(ReadOnlyModelViewSet):
     pagination_class = None  # modal wants full season in one go
     filter_backends = [DjangoFilterBackend, drf_filters.OrderingFilter]
     ordering_fields = ["round", "kickoff_time"]
-    logger.info("PlayerHistoryViewSet")
 
     def get_queryset(self):
         qs = (
@@ -87,7 +86,6 @@ class PredictionsViewSet(ReadOnlyModelViewSet):
     # Filtering / searching / ordering
     filter_backends = [DjangoFilterBackend, drf_filters.SearchFilter, drf_filters.OrderingFilter]
     filterset_class = PredictionsFilter
-    logger.info("PredictionsViewSet")
 
     search_fields = [
         "player__web_name",
@@ -128,7 +126,6 @@ class PlayerPredictionHistoryViewSet(ReadOnlyModelViewSet):
     pagination_class = None  # modal wants full season in one go
     filter_backends = [DjangoFilterBackend, drf_filters.OrderingFilter]
     ordering_fields = ["round", "kickoff_time"]
-    logger.info("PlayerPredictionHistoryViewSet")
 
     def get_queryset(self):
         qs = (

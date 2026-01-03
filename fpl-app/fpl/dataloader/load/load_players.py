@@ -9,11 +9,13 @@ from django.utils import timezone
 from django.db import IntegrityError
 from requests import ConnectTimeout, HTTPError, request
 
+from common.models.event import Event
 from fpl.exceptions.fpl_data_exceptions import FplPlayerDataError, \
     PlayerHistoryError
 from fpl.properties.properties import check_player_history_required, \
     get_properties
 from players.models import ElementType, Player, PlayerHistory, PlayerStatus
+from players.models.player_scout_risk import PlayerScoutRisk
 from teams.models import Team
 from utils.custom_requests import CustomSession
 from utils.json_utils import formatted_json
@@ -92,14 +94,33 @@ def save_multi_players(team, players, result_queue):
             # value added per million
             player.vapm = player.points_value_added_per_m()
 
-            # team joined date comes in as YYYY-MM-DD, need to
-
             # Get the history and set it
             time.sleep(properties.request_delay)
             histories = get_player_history(player)
-
             player.history_last_updated = timezone.now()
+
+            scout_risks = player._extra_fields["scout_risks"]
+
             player.save()
+
+            # Are there scout risks?
+            PlayerScoutRisk.objects.filter(player=player).delete()
+            for scout_risk in scout_risks:
+                try:
+                    gameweek = Event.objects.get(id=scout_risk["gameweek"])
+                except Event.DoesNotExist:
+                    logger.info(f"Event {scout_risk.gameweek} not found for scout risk on {player.web_name}")
+                    continue
+
+                PlayerScoutRisk.objects.create(
+                    player=player,
+                    gameweek=gameweek,
+                    property=scout_risk["property"],
+                    notes=scout_risk["notes"],
+                    url=scout_risk["url"]
+                )
+
+
             for history in histories:
 
                 history.last_updated = timezone.now()
