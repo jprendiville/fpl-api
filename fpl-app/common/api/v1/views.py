@@ -36,5 +36,4 @@ class EventViewSet(ReadOnlyModelViewSet):
             .order_by("-id")
         )
         serializer = self.get_serializer(qs, many=True)
-        print(serializer)
         return Response(serializer.data)

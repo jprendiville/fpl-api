@@ -64,19 +64,3 @@ def recalculate_predictions(request, recalculate_all=False):
 
     messages.success(*add_message(request, 'Predictions rebuilt'))
     return redirect('predictions')
-
-
-def player_status(request):
-    PlayerStatusFormSet = modelformset_factory(PlayerStatus, fields=('status', 'description', 'can_play'), extra=0)
-    if request.method == 'POST':
-        formset = PlayerStatusFormSet(request.POST)
-        if formset.is_valid():
-            formset.save()
-            messages.success(*add_message(request, 'Player Statuses saved'))
-            return redirect('player-status')
-        else:
-            messages.error(*add_message(request, 'Player Statuses not saved'))
-    else:
-        formset = PlayerStatusFormSet()
-
-    return render(request, 'player-status.html', {'formset': formset})

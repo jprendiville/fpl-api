@@ -11,6 +11,7 @@ from django.db import models
 from django.db.models import CASCADE
 
 from manager.classes.league_standings import LeagueStandings
+from players.models.player_status import PlayerStatus
 from players.models.element_type import ElementType
 from teams.models.team import Team
 from utils.model_utils import BaseModel
@@ -60,6 +61,7 @@ class Player(BaseModel):
     points_per_game_rank_type = models.IntegerField(null=True)
     web_name = models.CharField(max_length=64, blank=True)
     status = models.CharField(max_length=10, blank=True)
+    player_status = models.ForeignKey(PlayerStatus, to_field="status", on_delete=models.PROTECT, blank=True, null=True)
     chance_of_playing_this_round = models.IntegerField(default=100, blank=True)
     code = models.IntegerField(null=True)
     clean_sheets = models.IntegerField(null=True)

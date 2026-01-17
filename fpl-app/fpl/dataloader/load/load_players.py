@@ -39,18 +39,43 @@ def save_players(data, result_queue):
 
 
 def save_player_status(data):
-    # Get a distinct list of status'. We have to specify order_by as Player model has implicit ordering,
-    # and otherwise that affects the results
-    distinct_statuses = Player.objects.order_by().values_list('status', flat=True).distinct()
+    """
+    Extract all unique status codes from the API data and ensure
+    PlayerStatus rows exist for each one.
+    """
 
-    for status in distinct_statuses:
-        PlayerStatus.objects.update_or_create(
-            status=status,
-            defaults={'last_updated': timezone.now()}
+    # Extract unique status codes from the dataset
+    status_codes = {player.status for player in data if player.status}
+
+    # Known defaults (FPL standard meanings)
+    DEFAULTS = {
+        "a": ("Available", True, "#34a853"),
+        "d": ("Doubtful", True, "#fbbc04"),
+        "i": ("Injured", False, "#ea4335"),
+        "s": ("Suspended", False, "#ea4335"),
+        "u": ("Unavailable", False, "#808080"),
+    }
+
+    for code in status_codes:
+        desc, can_play, colour = DEFAULTS.get(
+            code,
+            ("Unknown", True, "#808080")  # fallback for any unexpected code
         )
 
+        # Create or update the status row
+        PlayerStatus.objects.update_or_create(
+            status=code,
+            defaults={
+                "description": desc,
+                "can_play": can_play,
+                "colour": colour,
+            }
+        )
 
 def save_players_by_team(data, result_queue):
+    # Save player status'
+    save_player_status(data)
+
     # Group by team
     grouped_players = {}
     for player in data:
@@ -70,9 +95,6 @@ def save_players_by_team(data, result_queue):
     for thread in threads:
         thread.join()
 
-    logger.info('Saving player status')
-    save_player_status(data)
-
     # Check for any exceptions raised in the threads
     if not result_queue.empty():
         logger.info('Failed to save some players.')
@@ -90,6 +112,7 @@ def save_multi_players(team, players, result_queue):
             # Prepare player data with team and type
             player.player_team = Team.objects.get(pk=player.team)
             player.player_type = ElementType.objects.get(pk=player.element_type)
+            player.player_status = PlayerStatus.objects.get(status=player.status)
 
             # value added per million
             player.vapm = player.points_value_added_per_m()

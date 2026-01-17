@@ -9,6 +9,7 @@ from players.api.v1.views import DefenceViewSet, \
     PredictionsViewSet, \
     TransfersInViewSet, \
     TransfersOutViewSet
+from settings.api.v1.views import PlayerStatusSettingsView
 from teams.api.v1.views import FdrViewSet, LeagueTableViewSet, TeamViewSet
 
 router = DefaultRouter()
@@ -32,4 +33,5 @@ urlpatterns = [
     path('predictions/<int:player_id>/player-history/', prediction_history_list, name='prediction-history-by-player'),
     path("reload-league/<int:league_id>/", ClassicLeagueReloadView.as_view(), name="reload-league"),
     path("league-progression/<int:league_id>/", LeagueProgressionView.as_view(), name="league-progression"),
+    path("settings/player-status/", PlayerStatusSettingsView.as_view(), name="player-status"),
 ]

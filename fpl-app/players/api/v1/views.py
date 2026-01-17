@@ -1,15 +1,10 @@
 import logging
 
 from django.db.models import Max
-from rest_framework import filters as drf_filters, viewsets
-from django_filters.rest_framework import DjangoFilterBackend, filters
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework import filters as drf_filters
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
-from common.models.event import Event
-from common.utils import get_current_gameweek
 from fpl.properties.properties import get_properties
 from players.models import ElementType, Player, PlayerHistory, PlayerPrediction
 from .serializers import ElementTypeSerializer, PlayerDefenceSerializer, \

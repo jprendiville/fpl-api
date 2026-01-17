@@ -11,9 +11,10 @@ class PlayerStatus(BaseModel):
     """ Class model to store a Element Type (ie, goalkeeper, defender,
     midfielder, forward) """
 
-    status = models.CharField(max_length=1, blank=True)
+    status = models.CharField(max_length=1, primary_key=True)
     description = models.CharField(max_length=32, blank=True)
     can_play = models.BooleanField(default=True)
+    colour = models.CharField(max_length=7, default='#34a853')
     last_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -27,9 +28,10 @@ class PlayerStatus(BaseModel):
     class Meta:
         """ Meta class for uniqueness """
 
+        managed = True
         constraints = [
             models.UniqueConstraint(
-                fields=['id', 'status'],
+                fields=['status'],
                 name='unique_player_status'
             )
         ]

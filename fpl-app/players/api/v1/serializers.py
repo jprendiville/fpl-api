@@ -5,6 +5,7 @@ from common.utils import get_next_gameweek, get_next_n_games_fdr
 from fpl.properties.properties import get_properties
 from players.models import Player, ElementType, PlayerPrediction
 from players.models.player_history import PlayerHistory
+from settings.api.v1.serializers import PlayerStatusSerializer
 from teams.api.v1.serializers import TeamSerializer
 from rest_framework import serializers
 
@@ -26,6 +27,7 @@ class ElementTypeMiniSerializer(serializers.ModelSerializer):
 class PlayerListSerializer(serializers.ModelSerializer):
     team = TeamSerializer(source="player_team", read_only=True)
     type = ElementTypeMiniSerializer(source="player_type", read_only=True)
+    status = PlayerStatusSerializer(source='player_status', read_only=True)
     next_games = serializers.SerializerMethodField()
 
     class Meta:
@@ -45,6 +47,7 @@ class PlayerDefenceSerializer(serializers.ModelSerializer):
     # replace raw FKs with nested
     team = TeamSerializer(source="player_team", read_only=True)
     type = ElementTypeMiniSerializer(source="player_type", read_only=True)
+    status = PlayerStatusSerializer(source='player_status', read_only=True)
     next_games = serializers.SerializerMethodField()
 
     class Meta:
@@ -96,6 +99,7 @@ class PlayerPredictionHistorySerializer(serializers.ModelSerializer):
     web_name = serializers.CharField(source="player.web_name", read_only=True)
     team = TeamSerializer(source="player.player_team", read_only=True)
     position = serializers.CharField(source="player.player_type.singular_name_short", read_only=True)
+    status = PlayerStatusSerializer(source='player_status', read_only=True)
 
     class Meta:
         model = PlayerPrediction
