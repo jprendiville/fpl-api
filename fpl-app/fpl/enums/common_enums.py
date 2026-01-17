@@ -12,6 +12,7 @@ class FixtureStatIdentifier(Enum):
     SAVES = "saves"
     BONUS = "bonus"
     BPS = "bps"
+    DEFENSIVE_CONTRIBUTION = "defensive_contribution"
     MANAGER_UNDERDOG_WIN = "mng_underdog_win"
     MANAGER_UNDERDOG_DRAW = "mng_underdog_draw"
 
