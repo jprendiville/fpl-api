@@ -111,6 +111,7 @@ class PlayerPredictionHistorySerializer(serializers.ModelSerializer):
             "web_name",
             "team",
             "position",
+            "status",
             "element",
             "total_points",
             "prediction",
