@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.test import TestCase
 from django.utils import timezone
 
+from common.models.event_chip_play import EventChipPlay
 from common.models.event_status import EventStatus
 from common.utils import get_next_n_games_fdr
 from manager.models import ClassicLeague, ClassicLeagueStandings, History,\
@@ -34,21 +35,18 @@ class TestModels(TestCase):
             id=2,
             name='Gameweek 2',
             is_previous=True,
-            chip_plays=[],
             deadline_time=timezone.now()
         )
         self.event_current = Event.objects.create(
             id=3,
             name='Gameweek 3',
             is_current=True,
-            chip_plays=[],
             deadline_time=timezone.now()
         )
         self.event_next = Event.objects.create(
             id=4,
             name='Gameweek 4',
             is_next=True,
-            chip_plays=[],
             deadline_time=timezone.now()
         )
 
@@ -58,6 +56,27 @@ class TestModels(TestCase):
             date = timezone.now().date(),
             event = 3,
             gameweek = self.event_current
+        )
+
+        self.event_chip_plays_bb = EventChipPlay.objects.create(
+            event = self.event_current,
+            chip_name = "bboost",
+            num_played = 206501
+        )
+        self.event_chip_plays_tc = EventChipPlay.objects.create(
+            event = self.event_current,
+            chip_name = "3xc",
+            num_played = 267066
+        )
+        self.event_chip_plays_fh = EventChipPlay.objects.create(
+            event = self.event_current,
+            chip_name = "freehit",
+            num_played = 159592
+        )
+        self.event_chip_plays_wc = EventChipPlay.objects.create(
+            event = self.event_current,
+            chip_name = "wildcard",
+            num_played = 433085
         )
 
         self.home_team = Team.objects.create(
