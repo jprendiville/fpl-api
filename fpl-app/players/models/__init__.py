@@ -2,6 +2,7 @@
 from .element_type import ElementType
 from common.models.event import Event
 from common.models.event_overrides import EventOverride
+from common.models.event_chip_play import EventChipPlay
 from common.models.fixture import Fixture
 from common.models.fixture_stats import FixtureStats
 from common.models.last_updated import LastUpdated

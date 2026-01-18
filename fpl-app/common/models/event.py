@@ -28,7 +28,6 @@ class Event(BaseModel):
     cup_leagues_created = models.BooleanField(default=False)
     h2h_ko_matches_created = models.BooleanField(default=False)
     ranked_count = models.IntegerField(null=True)
-    chip_plays = models.JSONField(default=list, blank=True)
     most_selected = models.IntegerField(null=True, blank=True)
     most_transferred_in = models.IntegerField(null=True, blank=True)
     top_element = models.IntegerField(null=True, blank=True)

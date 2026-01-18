@@ -3,6 +3,7 @@ import logging
 from django.forms import model_to_dict
 
 from common.models.event import Event
+from common.models.event_chip_play import EventChipPlay
 from common.models.event_overrides import EventOverride
 from common.models.event_status import EventStatus
 from common.utils import get_gameweek
@@ -19,9 +20,11 @@ def save_events(data):
     logger.info('Got %s events', str(len(data['events'])))
     event_instances = []
     event_overrides = []
+    event_chipplays = []
     for event_data in data['events']:
         # Preserve overrides
         overrides = event_data.pop('overrides', None)
+        chip_plays = event_data.pop('chip_plays', None)
 
         # Validate and create the Event instance
         validated_events = validate_json_against_model([event_data], Event)
@@ -33,6 +36,9 @@ def save_events(data):
             if overrides:
                 event_overrides.append((event, overrides))
 
+            if chip_plays:
+                event_chipplays.append((event, chip_plays))
+
     for event in event_instances:
         event.save()
 
@@ -43,6 +49,16 @@ def save_events(data):
             override = validated_overrides[0]
             override.gameweek_id = event.id
             override.save()
+
+    for event, chip_plays in event_chipplays:
+        for chip_data in chip_plays:
+            chip_data["event"] = event
+            validated_chip = validate_json_against_model([chip_data], EventChipPlay)
+            if validated_chip:
+                chip = validated_chip[0]
+                chip.event_id = event.id
+                chip.save()
+
 
 def save_event_status(data):
     """ Parse and save Event Status data

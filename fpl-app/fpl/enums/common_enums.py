@@ -1,5 +1,7 @@
 from enum import Enum
 
+from django.db import models
+
 
 class FixtureStatIdentifier(Enum):
     GOALS_SCORED = "goals_scored"
@@ -67,3 +69,10 @@ class DataTypeIdentifier(Enum):
     @classmethod
     def choices(cls):
         return [(choice.value, choice.name.title()) for choice in cls]
+
+
+class ChipIdentifier(models.TextChoices):
+    BENCH_BOOST = "bboost", "Bench Boost"
+    FREE_HIT = "freehit", "Free Hit"
+    WILDCARD = "wildcard", "Wildcard"
+    TRIPLE_CAPTAIN = "3xc", "Triple Captain"

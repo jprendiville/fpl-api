@@ -28,7 +28,6 @@ def validate_json_against_model(json_data, model):
     """
     Validates JSON data against a Django model and also identifies extra fields.
 
-    NEW BEHAVIOUR:
     - If a JSON field is not on the model, we check whether a related model exists.
       Example: Player + scout_risks → PlayerScoutRisk
     - If the related model exists, we validate nested items against that model.
@@ -65,6 +64,10 @@ def validate_json_against_model(json_data, model):
 
         # Validate nested fields against related models
         for key, nested_list in nested_fields.items():
+            # Skip any empty nested lists (ie, where something is []
+            if isinstance(nested_list, list) and len(nested_list) == 0:
+                continue
+
             related_model = None
 
             singular = singularize(key)
