@@ -24,7 +24,7 @@ def parse_decimal(value):
     return Decimal(value).quantize(Decimal('0.00'))
 
 
-def validate_json_against_model(json_data, model):
+def validate_json_against_model(json_data, model, parent_model=None):
     """
     Validates JSON data against a Django model and also identifies extra fields.
 
@@ -39,21 +39,27 @@ def validate_json_against_model(json_data, model):
         return []
 
     try:
+        if parent_model is None:
+            parent_model = model
+
         # Model fields and M2M fields
         model_fields = set(field.name for field in model._meta.fields)
         many_to_many_fields = set(field.name for field in model._meta.many_to_many)
 
-        json_fields = set(json_data[0].keys())
+        # Collect all JSON fields across all rows
+        json_fields = set().union(*(d.keys() for d in json_data))
 
         # Fields not in the model
         new_json_fields = json_fields - (model_fields | many_to_many_fields)
 
-        # Detect nested fields (ANY list is considered nested, even empty)
-        nested_fields = {
-            key: value
-            for key, value in json_data[0].items()
-            if isinstance(value, list)
-        }
+        # Detect nested fields: list containing dicts in ANY row
+        nested_fields = {}
+        for key in json_fields:
+            for row in json_data:
+                value = row.get(key)
+                if isinstance(value, list) and value and isinstance(value[0], dict):
+                    nested_fields[key] = value
+                    break
 
         # Primitive new fields = not model fields, not M2M, not nested
         primitive_new_fields = new_json_fields - set(nested_fields.keys())
@@ -64,15 +70,11 @@ def validate_json_against_model(json_data, model):
 
         # Validate nested fields against related models
         for key, nested_list in nested_fields.items():
-            # Skip any empty nested lists (ie, where something is []
             if isinstance(nested_list, list) and len(nested_list) == 0:
                 continue
 
-            related_model = None
-
             singular = singularize(key)
             related_model_name = f"{model.__name__}{''.join(part.capitalize() for part in singular.split('_'))}"
-
 
             try:
                 related_model = apps.get_model(
@@ -85,14 +87,18 @@ def validate_json_against_model(json_data, model):
                 )
                 continue
 
-            # Validate each nested item
+            # Validate each nested item structurally
             for item in nested_list:
                 try:
-                    validate_json_against_model([item], related_model)
+                    validate_json_against_model([item], related_model, parent_model=parent_model)
                 except Exception as e:
                     logger.info(
                         f"Validation error in nested field '{key}' for model '{related_model_name}': {e}"
                     )
+
+        # If this is a nested model, stop here: don't build instances
+        if model is not parent_model:
+            return []
 
         cleaned_data = []
         many_to_many_data = []
@@ -120,7 +126,7 @@ def validate_json_against_model(json_data, model):
             extra_fields = {key: data[key] for key in nested_fields if key in data}
             extra_fields_list.append(extra_fields)
 
-        # Validate cleaned data
+        # Validate cleaned data (top-level only)
         model_instances = []
         for i, cleaned_entry in enumerate(cleaned_data):
             instance = model(**cleaned_entry)
