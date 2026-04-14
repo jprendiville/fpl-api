@@ -10,7 +10,7 @@ drf-spectacular==0.29.0
 multipledispatch==1.0.0
 pandas==3.0.1
 numpy==2.4.1
-pytest==9.0.2
+pytest==9.0.3
 requests==2.33.0
 str2bool==1.1
 scikit_learn==1.8.0
