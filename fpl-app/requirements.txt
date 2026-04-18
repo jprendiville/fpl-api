@@ -17,5 +17,5 @@ scikit_learn==1.8.0
 tweepy==4.16.0
 humanize==4.15.0
 psycopg2==2.9.11
-python-dotenv==1.2.1
+python-dotenv==1.2.2
 pytz==2025.2
