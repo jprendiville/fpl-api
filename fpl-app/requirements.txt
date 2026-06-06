@@ -16,6 +16,6 @@ str2bool==1.1
 scikit_learn==1.8.0
 tweepy==4.16.0
 humanize==4.15.0
-psycopg2==2.9.11
+psycopg2==2.9.12
 python-dotenv==1.2.2
 pytz==2026.1
